@@ -16,8 +16,48 @@ to insert a new keyframe.
 achieve an optimal reconstruction in the surroundings of the camera 
 pose.
 * Loop Closing: searches for loops with every new keyframe.  
-3. Map Points, KeyFrames and their Selection
-* Map Points $p_i$
+3. Map Points, KeyFrames and their Selection  
+* Each map point $p_{i}$ stores:   
+    * Its 3D position $\bm{X}_{w,i}$ in the world coordinate system. 
+    * The viewing direction $\bm{n}_i$, which is the mean unit vector
+of all its viewing directions (the rays that join the point with the
+optical center of the keyframes that observe it). 
+    * A representative ORB descriptor $\bm{D}_i$, which is the 
+associated descriptors in the keyframes in which the point is 
+observed. 
+    * The maximum $d_{max}$ and minimum $d_{min}$ distances at which 
+the point can be observed, according to the scale invariance limits
+of the ORB features. 
+
+* Each keyframe $K_{i}$ stores: 
+    * The camera pose $\bm{T}_{iw}$, which is a rigid body 
+transformation that transforms points from the world to the camera 
+coordinate system. 
+    * The camera intrinsics, including focal length and principal 
+point. 
+    * All the ORB features extracted in the frame, associated or not 
+to a map point, whose coordinates are undistorted if a distortion 
+model is provided.  
+4. *Covisibility Graph* and *Essential Graph*  
+* *Covisibility Graph*:  
+An **undirected weighted** graph. Each **node** is a **keyframe** 
+and an **edge** between two keyframes exists if they **share 
+observations of the same map points** (at least 15). The **weight** 
+$\theta$ of the edge is the **number of common map points**. 
+
+* *Essential Graph*: retains **all the nodes** (keyframes), but 
+**less edges**, still preserving a strong network that yields 
+accurate results.  
+The system builds incrementally a *spanning tree* from the initial
+keyframe, which provides a **connected subgraph of the covisibility
+graph with minimal number of edges**.  
+The *Essential Graph* contains 
+    * the *spanning tree*
+    * the subset of edges from the *covisibility graph* with high
+covisibility ($\theta_{min} = 100$)
+    * the loop closure edges
+5. *Bags of Words Place Recognition*
+
 
 ## Map Initialization
 
