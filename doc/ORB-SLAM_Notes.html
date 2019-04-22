@@ -1,0 +1,122 @@
+<h1 id="notes-on-orb-slam-paper">Notes on ORB-SLAM Paper</h1>
+<h2 id="system-overview">System Overview</h2>
+<ol style="list-style-type: decimal">
+<li>Feature Choice<br />
+</li>
+</ol>
+<ul>
+<li><strong>Same features</strong> used by the mapping and tracking are used for place recognition to perform frame-rate relocalization and loop detection.</li>
+<li>ORB: <em>oriented multi-scale FAST corners with a 256 bits descriptor associated</em>. Extremely fast to compute and match, while having <strong>good invariance to viewpoint</strong>.<br />
+</li>
+<li>To obtain general place recognition capabilities, we require rotation invariance, which excludes BRIEF and LDB.</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Three Threads: Tracking, Local Mapping and Loop Closing</li>
+</ol>
+<ul>
+<li>Tracking: localizes the camera with every frame and decides when to insert a new keyframe.<br />
+</li>
+<li>Local Mapping: processes new keyframes and performs local BA to achieve an optimal reconstruction in the surroundings of the camera pose.</li>
+<li>Loop Closing: searches for loops with every new keyframe.<br />
+</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Map Points, KeyFrames and their Selection<br />
+</li>
+</ol>
+<ul>
+<li>Each map point <span class="math inline"><em>p</em><sub><em>i</em></sub></span> stores:
+<ul>
+<li>Its 3D position <span class="math inline"><strong>X</strong><sub><em>w</em>, <em>i</em></sub></span> in the world coordinate system.</li>
+<li>The viewing direction <span class="math inline"><strong>n</strong><sub><em>i</em></sub></span>, which is the mean unit vector of all its viewing directions (the rays that join the point with the optical center of the keyframes that observe it).</li>
+<li>A representative ORB descriptor <span class="math inline"><strong>D</strong><sub><em>i</em></sub></span>, which is the associated descriptors in the keyframes in which the point is observed.</li>
+<li>The maximum <span class="math inline"><em>d</em><sub><em>m</em><em>a</em><em>x</em></sub></span> and minimum <span class="math inline"><em>d</em><sub><em>m</em><em>i</em><em>n</em></sub></span> distances at which the point can be observed, according to the scale invariance limits of the ORB features.</li>
+</ul></li>
+<li>Each keyframe <span class="math inline"><em>K</em><sub><em>i</em></sub></span> stores:
+<ul>
+<li>The camera pose <span class="math inline"><strong>T</strong><sub><em>i</em><em>w</em></sub></span>, which is a rigid body transformation that transforms points from the world to the camera coordinate system.</li>
+<li>The camera intrinsics, including focal length and principal point.</li>
+<li>All the ORB features extracted in the frame, associated or not to a map point, whose coordinates are undistorted if a distortion model is provided.<br />
+</li>
+</ul></li>
+</ul>
+<ol start="4" style="list-style-type: decimal">
+<li><em>Covisibility Graph</em> and <em>Essential Graph</em><br />
+</li>
+</ol>
+<ul>
+<li><p><em>Covisibility Graph</em>:<br />
+An <strong>undirected weighted</strong> graph. Each <strong>node</strong> is a <strong>keyframe</strong> and an <strong>edge</strong> between two keyframes exists if they <strong>share observations of the same map points</strong> (at least 15). The <strong>weight</strong> <span class="math inline"><em>θ</em></span> of the edge is the <strong>number of common map points</strong>.</p></li>
+<li><em>Essential Graph</em>: retains <strong>all the nodes</strong> (keyframes), but <strong>less edges</strong>, still preserving a strong network that yields accurate results.<br />
+The system builds incrementally a <em>spanning tree</em> from the initial keyframe, which provides a <strong>connected subgraph of the covisibility graph with minimal number of edges</strong>.<br />
+The <em>Essential Graph</em> contains
+<ul>
+<li>the <em>spanning tree</em></li>
+<li>the subset of edges from the <em>covisibility graph</em> with high covisibility (<span class="math inline"><em>θ</em><sub><em>m</em><em>i</em><em>n</em></sub> = 100</span>)</li>
+<li>the loop closure edges</li>
+</ul></li>
+</ul>
+<ol start="5" style="list-style-type: decimal">
+<li><em>Bags of Words Place Recognition</em><br />
+Performs loop detection and relocalization.</li>
+</ol>
+<ul>
+<li>Visual words: a discretization of the descriptor space (<strong>visual vocabulary</strong>).<br />
+The vocabulary is created offline with the <strong>ORB descriptors extracted from a large set of images</strong>.<br />
+The system builds incrementally a database that contains an invert index, which stores for each visual word in the vocabulary, in <strong>which keyframes it has been seen</strong>.</li>
+</ul>
+<h2 id="map-initialization">Map Initialization</h2>
+<h2 id="tracking">Tracking</h2>
+<p>ORB extraction - extract FAST corners. The orientation and <strong>ORB descriptor</strong> are then computed on the retained FAST coners. (ORB descriptor is used in all feature matching).</p>
+<p>Initial Pose Estimation from previous frame - If tracking in last frame is successful: 1. use contant velocity model to predict the camera pose and perform a guided search of the map points observed in the last frame. 2. If not enough matches were found, use a wider search of the map points around their position in the last frame.</p>
+<p>Initial Pose Estimation via global relocalization - If the tracking is lost: 1. Convert the frame into <strong>bag of words</strong> and query the recognition database for keyframe candidates for global relocalization. 2. Compute associated map points in each keyframe. 3. <strong>RANSAC</strong> iterations for each keyframe and try to find a camera pose. 4. Optimize the pose and perform a guided search of more matches with the map points of the candidate keyframe.</p>
+<p>Track Local map - Based on our estimation of the camera pose and an initial set of feature matches, we can project the map into the frame and search more map points. As a complexity issue, we only project a local map. This local map contains the set of keyframes K1 (share map points with current frame). A set K2 with neighbors to the keyframe K1 in the convisibility graph.</p>
+<ol style="list-style-type: decimal">
+<li>Compute the map point projection x in the current frame.</li>
+<li>Compute the angle between the current viewing ray v and the map point mean viewing direction n.</li>
+<li>Compute the distance d from map point to camera center.</li>
+<li>Compute the scale in the frame by the ratio d/dmin.</li>
+<li>Compare the <strong>representative descriptor D</strong> of the map point with the still unmatched ORB features in the frame, at the predicted scale and near x, and associate the map point with the best match.</li>
+</ol>
+<p>After this step, the camera pose is finally optimized with all the map points found in the frame</p>
+<p>New Keyframe Decision - Decide if the current frame is spawned as a new keyframe.</p>
+<p>Contions met to insert a new keyframe: 1) More than 20 frames must have passed from the last global relocalization. 2) Local mapping is idle, or more than 20 frames have passed from the last keyframe insertion. 3) Current frame tracks at least 50 points. 4) Current frame tracks less than 90% points than Kref.</p>
+<h2 id="local-mapping">Local Mapping</h2>
+<ol style="list-style-type: decimal">
+<li>KeyFrame Insertion</li>
+</ol>
+<ul>
+<li>Update the covisibility graph</li>
+<li>Add a new node for <strong>Ki</strong></li>
+<li>Update the edges resulting from the shared map points with <strong>other keyframes</strong></li>
+<li>Update the spanning tree linking <strong>Ki</strong> with keyframes with most points in common</li>
+<li>Compute BOG for triangulating new points</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Recent Map points Culling</li>
+</ol>
+<ul>
+<li>Map points need to pass a test to be retained in the map</li>
+<li>Satisfy two conditions: 1) The tracking must find the point in more than 25% of the frames; 2) It must be observed from at least three frames</li>
+<li>Once it passes, it can only be removed when observed less than 3 keyframes</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>New Map Point Creation</li>
+</ol>
+<ul>
+<li>New map points are created by triangulating ORB from connected keyframes in the covisibility graph</li>
+<li><strong>For each unmatched point</strong>, search a match with other unmatched point in other keyframe</li>
+</ul>
+<ol start="4" style="list-style-type: decimal">
+<li>Local Bundle Adjustment</li>
+</ol>
+<ul>
+<li>BA optimizes the currently possessed keyframe <strong>Ki</strong>, all the keyframes connected to it in the covisibility graph and all the map points seen by those keyframes</li>
+</ul>
+<ol start="5" style="list-style-type: decimal">
+<li>Local Keyframe Culling</li>
+</ol>
+<ul>
+<li>Detect redundant keyframes and delete them</li>
+<li>Discard all the keyframes whose 90% of the map points have been seen in at least other three keyframes in the same or finer scale ## Loop Closing</li>
+</ul>
