@@ -13,19 +13,19 @@ rotation invariance, which excludes BRIEF and LDB.
 ## Map Initialization
 
 ## Tracking
-*ORB extraction 
+* ORB extraction
 - extract FAST corners. The orientation and **ORB descriptor**
 are then computed on the retained FAST coners. (ORB descriptor is used in
 all feature matching).
 
-*Initial Pose Estimation from previous frame 
+* Initial Pose Estimation from previous frame 
 - If tracking  in last frame is successful:
     1. use contant velocity model to predict the camera pose and perform 
        a guided search of the map points observed in the last frame. 
     2. If not enough matches were found, use a wider search of the map points
        around their position in the last frame.
 
-*Initial Pose Estimation via global relocalization 
+* Initial Pose Estimation via global relocalization 
 - If the tracking is lost:
     1. Convert the frame into **bag of words** and query the recognition database
        for keyframe candidates for global relocalization. 
@@ -34,7 +34,7 @@ all feature matching).
     4. Optimize the pose and perform a guided search of more matches with the map 
        points of the candidate keyframe.
 
-*Track Local map 
+* Track Local map 
 - Based on our estimation of the camera pose and an initial set of feature matches, 
 we can project the map into the frame and search more map points. As a complexity 
 issue, we only project a local map. This local map contains the set of keyframes K1
@@ -53,7 +53,7 @@ in the convisibility graph.
 After this step, the camera pose is finally optimized with all the map points found 
 in the frame
 
-*New Keyframe Decision 
+* New Keyframe Decision 
 - Decide if the current frame is spawned as a new keyframe.
 
   Contions met to insert a new keyframe:
