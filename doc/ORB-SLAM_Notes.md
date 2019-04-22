@@ -17,7 +17,7 @@ rotation invariance, which excludes BRIEF and LDB.
 ## Local Mapping
 1. KeyFrame Insertion
 * Update the covisibility graph
-* Add a new node for * **Ki** *
+* Add a new node for **Ki** 
 * Update the edges resulting from the shared map points with
 **other keyframes** 
 * Update the spanning tree linking **Ki** with keyframes with most
