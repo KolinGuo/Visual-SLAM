@@ -8,12 +8,14 @@ associated*. Extremely fast to compute and match, while having **good
 invariance to viewpoint**.  
 * To obtain general place recognition capabilities, we require rotation 
 invariance, which excludes BRIEF and LDB. 
+
 2. Three Threads: Tracking, Local Mapping and Loop Closing
 * Tracking: localizes the camera with every frame and decides when to insert 
 a new keyframe.  
 * Local Mapping: processes new keyframes and performs local BA to achieve an 
 optimal reconstruction in the surroundings of the camera pose.
 * Loop Closing: searches for loops with every new keyframe.  
+
 3. Map Points, KeyFrames and their Selection  
 * Each map point $p_{i}$ stores:   
     * Its 3D position $\bm{X}_{w,i}$ in the world coordinate system. 
@@ -31,6 +33,7 @@ transforms points from the world to the camera coordinate system.
     * The camera intrinsics, including focal length and principal point. 
     * All the ORB features extracted in the frame, associated or not to a map 
 point, whose coordinates are undistorted if a distortion model is provided.  
+
 4. *Covisibility Graph* and *Essential Graph*  
 * *Covisibility Graph*:  
 An **undirected weighted** graph. Each **node** is a **keyframe** and an 
@@ -48,6 +51,7 @@ The *Essential Graph* contains
     * the subset of edges from the *covisibility graph* with high covisibility 
 ($\theta_{min} = 100$)
     * the loop closure edges
+
 5. *Bags of Words Place Recognition*  
 Performs loop detection and relocalization. 
 * Visual words: a discretization of the descriptor space (**visual 
@@ -58,7 +62,60 @@ The system builds incrementally a database that contains an invert index, which
 stores for each visual word in the vocabulary, in **which keyframes it has been 
 seen**. 
 
+
 ## Map Initialization
+Goal: Computes the relative pose between two frames to triangulate an initial 
+set of map points.  
+Two geometrical models are computed in parallel:  
+
+1. A **homography** assuming a **planar scene**
+2. A **fundamental matrix** assuming a **non-planar scene**
+
+Detailed steps: 
+
+1. Final initial correspondences:  
+Extract ORB features in the current frame $F_c$ and search for matches 
+$\bm{x}_c \Leftrightarrow \bm{x}_r$ in the reference frame $F_r$.  
+If not enough matches are found, reset the reference frame. 
+
+2. Parallel computation of the two models:  
+Compute in parallel threads a homography $\bm{H}_{cr}$ and a funfamental matrix 
+$\bm{F}_{cr}$.  
+Compute a score $S_M$ for each model $M$ ($H$ for the homography, $F$ for the 
+fundamental matrix) at each iteration and keep the homography and fundamental 
+matrix with highest score.  
+If no model could be found, restart the process again from step 1. 
+
+3. Model selection:  
+If the scene is **planar**, **nearly planar** or there is **low parallax**, 
+it can be explained by a **homography**. However, a fundamental matrix can also
+be found, but using it would yield wrong results.  
+If the scene is **non-planar** with **enough parallax**, it can only be 
+explained by the **fundamental matrix**. However, a homography can also be 
+found.  
+To select between them, compute $R_H = S_H / (S_H+S_F)$ and select 
+    * homography, if $R_H > 0.45$
+    * fundamental matrix, otherwise
+
+4. Motion and Structure from Motion recovery:  
+Retrieve the motion hypotheses associated.  
+
+    Homography:  
+Retrieve 8 motion hypotheses and directly triangulate the 8 solutions. Check if
+there is one solution with **most points seen with parallax**, in front of both
+cameras and with low reprojection error. If not, do not initialize and continue
+from step 1.  
+This technique to disambiguate the solutions makes the initialization **robust** 
+under low parallax and the twofold ambiguity configuration.  
+
+    Fundamental matrix:  
+Convert it in an essential matrix and retrieve 4 motion hypotheses with the 
+singular value decomposition method. Triangulate the four solutions and select
+the reconstruction as done for the homography. 
+
+5. Bundle adjustment:  
+Perform a full BA to refine the initial reconstruction. 
+
 
 ## Tracking
 ORB extraction 
@@ -111,6 +168,7 @@ New Keyframe Decision
     3) Current frame tracks at least 50 points.
     4) Current frame tracks less than 90% points than Kref.
 
+
 ## Local Mapping
 1. KeyFrame Insertion
 * Update the covisibility graph
@@ -138,6 +196,8 @@ keyframes
 * Detect redundant keyframes and delete them
 * Discard all the keyframes whose 90% of the map points have been seen in at 
 least other three keyframes in the same or finer scale 
+
+
 ## Loop Closing
 
 

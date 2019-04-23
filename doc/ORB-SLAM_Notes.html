@@ -17,8 +17,7 @@
 <li>Tracking: localizes the camera with every frame and decides when to insert a new keyframe.<br />
 </li>
 <li>Local Mapping: processes new keyframes and performs local BA to achieve an optimal reconstruction in the surroundings of the camera pose.</li>
-<li>Loop Closing: searches for loops with every new keyframe.<br />
-</li>
+<li>Loop Closing: searches for loops with every new keyframe.</li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
 <li>Map Points, KeyFrames and their Selection<br />
@@ -36,8 +35,7 @@
 <ul>
 <li>The camera pose <span class="math inline"><strong>T</strong><sub><em>i</em><em>w</em></sub></span>, which is a rigid body transformation that transforms points from the world to the camera coordinate system.</li>
 <li>The camera intrinsics, including focal length and principal point.</li>
-<li>All the ORB features extracted in the frame, associated or not to a map point, whose coordinates are undistorted if a distortion model is provided.<br />
-</li>
+<li>All the ORB features extracted in the frame, associated or not to a map point, whose coordinates are undistorted if a distortion model is provided.</li>
 </ul></li>
 </ul>
 <ol start="4" style="list-style-type: decimal">
@@ -66,6 +64,39 @@ The vocabulary is created offline with the <strong>ORB descriptors extracted fro
 The system builds incrementally a database that contains an invert index, which stores for each visual word in the vocabulary, in <strong>which keyframes it has been seen</strong>.</li>
 </ul>
 <h2 id="map-initialization">Map Initialization</h2>
+<p>Goal: Computes the relative pose between two frames to triangulate an initial set of map points.<br />
+Two geometrical models are computed in parallel:</p>
+<ol style="list-style-type: decimal">
+<li>A <strong>homography</strong> assuming a <strong>planar scene</strong></li>
+<li>A <strong>fundamental matrix</strong> assuming a <strong>non-planar scene</strong></li>
+</ol>
+<p>Detailed steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Final initial correspondences:<br />
+Extract ORB features in the current frame <span class="math inline"><em>F</em><sub><em>c</em></sub></span> and search for matches <span class="math inline"><strong>x</strong><sub><em>c</em></sub> ⇔ <strong>x</strong><sub><em>r</em></sub></span> in the reference frame <span class="math inline"><em>F</em><sub><em>r</em></sub></span>.<br />
+If not enough matches are found, reset the reference frame.</p></li>
+<li><p>Parallel computation of the two models:<br />
+Compute in parallel threads a homography <span class="math inline"><strong>H</strong><sub><em>c</em><em>r</em></sub></span> and a funfamental matrix <span class="math inline"><strong>F</strong><sub><em>c</em><em>r</em></sub></span>.<br />
+Compute a score <span class="math inline"><em>S</em><sub><em>M</em></sub></span> for each model <span class="math inline"><em>M</em></span> (<span class="math inline"><em>H</em></span> for the homography, <span class="math inline"><em>F</em></span> for the fundamental matrix) at each iteration and keep the homography and fundamental matrix with highest score.<br />
+If no model could be found, restart the process again from step 1.</p></li>
+<li>Model selection:<br />
+If the scene is <strong>planar</strong>, <strong>nearly planar</strong> or there is <strong>low parallax</strong>, it can be explained by a <strong>homography</strong>. However, a fundamental matrix can also be found, but using it would yield wrong results.<br />
+If the scene is <strong>non-planar</strong> with <strong>enough parallax</strong>, it can only be explained by the <strong>fundamental matrix</strong>. However, a homography can also be found.<br />
+To select between them, compute <span class="math inline"><em>R</em><sub><em>H</em></sub> = <em>S</em><sub><em>H</em></sub>/(<em>S</em><sub><em>H</em></sub> + <em>S</em><sub><em>F</em></sub>)</span> and select
+<ul>
+<li>homography, if <span class="math inline"><em>R</em><sub><em>H</em></sub> &gt; 0.45</span></li>
+<li>fundamental matrix, otherwise</li>
+</ul></li>
+<li><p>Motion and Structure from Motion recovery:<br />
+Retrieve the motion hypotheses associated.</p>
+<p>Homography:<br />
+Retrieve 8 motion hypotheses and directly triangulate the 8 solutions. Check if there is one solution with <strong>most points seen with parallax</strong>, in front of both cameras and with low reprojection error. If not, do not initialize and continue from step 1.<br />
+This technique to disambiguate the solutions makes the initialization <strong>robust</strong> under low parallax and the twofold ambiguity configuration.</p>
+<p>Fundamental matrix:<br />
+Convert it in an essential matrix and retrieve 4 motion hypotheses with the singular value decomposition method. Triangulate the four solutions and select the reconstruction as done for the homography.</p></li>
+<li><p>Bundle adjustment:<br />
+Perform a full BA to refine the initial reconstruction.</p></li>
+</ol>
 <h2 id="tracking">Tracking</h2>
 <p>ORB extraction - extract FAST corners. The orientation and <strong>ORB descriptor</strong> are then computed on the retained FAST coners. (ORB descriptor is used in all feature matching).</p>
 <p>Initial Pose Estimation from previous frame - If tracking in last frame is successful: 1. use contant velocity model to predict the camera pose and perform a guided search of the map points observed in the last frame. 2. If not enough matches were found, use a wider search of the map points around their position in the last frame.</p>
@@ -118,5 +149,6 @@ The system builds incrementally a database that contains an invert index, which 
 </ol>
 <ul>
 <li>Detect redundant keyframes and delete them</li>
-<li>Discard all the keyframes whose 90% of the map points have been seen in at least other three keyframes in the same or finer scale ## Loop Closing</li>
+<li>Discard all the keyframes whose 90% of the map points have been seen in at least other three keyframes in the same or finer scale</li>
 </ul>
+<h2 id="loop-closing">Loop Closing</h2>
