@@ -1,3 +1,6 @@
+# ----------- Vim related    -----------
+*.swp
+
 # ----------- Python related -----------
 # Byte-compiled / optimized / DLL files
 __pycache__/
