@@ -23,17 +23,17 @@ build/
 lib/
 
 
-Examples/Stereo/EuRoC Dataset/MH_01_easy
-Examples/Stereo/EuRoC Dataset/MH_02_easy
-Examples/Stereo/EuRoC Dataset/MH_03_medium
-Examples/Stereo/EuRoC Dataset/MH_04_difficult
-Examples/Stereo/EuRoC Dataset/MH_05_difficult
-Examples/Stereo/EuRoC Dataset/V1_01_easy
-Examples/Stereo/EuRoC Dataset/V1_02_medium
-Examples/Stereo/EuRoC Dataset/V1_03_difficult
-Examples/Stereo/EuRoC Dataset/V2_01_easy
-Examples/Stereo/EuRoC Dataset/V2_02_medium
-Examples/Stereo/EuRoC Dataset/V2_03_difficult
-Examples/Stereo/KITTI Dataset/dataset
-Examples/Stereo/KITTI Dataset/devkit
+Examples/Stereo/EuRoC_Dataset/MH_01_easy
+Examples/Stereo/EuRoC_Dataset/MH_02_easy
+Examples/Stereo/EuRoC_Dataset/MH_03_medium
+Examples/Stereo/EuRoC_Dataset/MH_04_difficult
+Examples/Stereo/EuRoC_Dataset/MH_05_difficult
+Examples/Stereo/EuRoC_Dataset/V1_01_easy
+Examples/Stereo/EuRoC_Dataset/V1_02_medium
+Examples/Stereo/EuRoC_Dataset/V1_03_difficult
+Examples/Stereo/EuRoC_Dataset/V2_01_easy
+Examples/Stereo/EuRoC_Dataset/V2_02_medium
+Examples/Stereo/EuRoC_Dataset/V2_03_difficult
+Examples/Stereo/KITTI_Dataset/dataset
+Examples/Stereo/KITTI_Dataset/devkit
 
