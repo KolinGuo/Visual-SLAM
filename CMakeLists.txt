@@ -17,10 +17,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 message("Build type: " ${CMAKE_BUILD_TYPE})
-message("CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
-message("CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
-message("PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
-message("CMAKE_CURRENT_SOURCE_DIR: " ${CMAKE_CURRENT_SOURCE_DIR})
+message("Build version: " ${ORBSLAM2PY_VERSION_STR})
 
 # Building options
 #-----------------------------------------------------------------------------------------------------------------------
@@ -112,7 +109,8 @@ endif ()
 file(GLOB ORBSLAM2PY_LIB_SOURCES
 #        ${ORBSLAM2_INCLUDE_DIR}/*.h
 #        ${ORBSLAM2_LIB_SRC_DIR}/*.h
-        ${ORBSLAM2PY_LIB_SRC_DIR}/*.cpp)
+        ${ORBSLAM2PY_LIB_SRC_DIR}/src/*.cpp
+        ${ORBSLAM2PY_LIB_SRC_DIR}/lib/*.cpp)
 
 #add_library(libORBSLAM2_static STATIC ${ORBSLAM2_LIB_SOURCES})
 #target_link_libraries(libORBSLAM2_static ${ORBSLAM2_LIBS})
@@ -217,7 +215,7 @@ if (BUILD_PYTHON3)
     set(ORBSLAM2PY_PYTHON_SOURCES
 #            ${ORBSLAM2_PYTHON_SRC_DIR}/ORBSLAM2GamePython.h
 #            ${ORBSLAM2_PYTHON_SRC_DIR}/ORBSLAM2GamePython.cpp
-            ${ORBSLAM2PY_PYTHON_SRC_DIR}/src/orbslam2.cpp
+            ${ORBSLAM2PY_PYTHON_SRC_DIR}/src/orbslam2py.cpp
             ${ORBSLAM2PY_PYTHON_SRC_DIR}/lib/conversion.cpp)
 
     if (WIN32)

@@ -9,8 +9,7 @@ echo "Building image..."
 sudo nvidia-docker build --rm=true -t orbslam2py .
 
 echo "Removing older container..."
-if [ 1 -eq $(sudo docker container ls -a | grep "orbslam2py$" | wc -l) ] 
-then
+if [ 1 -eq $(sudo docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
 	sudo nvidia-docker rm -f orbslam2py
 fi
 

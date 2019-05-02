@@ -86,8 +86,8 @@ RUN apt-get update && apt-get install -y \
         libgtk2.0-dev \
         libjpeg-dev \
         libjasper-dev \
-        libopenexr-dev cmake python-dev \
-        python-numpy python-tk libtbb-dev \
+        libopenexr-dev cmake \
+	python-tk libtbb-dev \
         libeigen2-dev yasm libfaac-dev \
         libopencore-amrnb-dev libopencore-amrwb-dev \
         libtheora-dev libvorbis-dev libxvidcore-dev \

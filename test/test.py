@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import ORBSLAM2 as os2
+import ORBSLAM2PY as os2
 from time import sleep
 import time
 
@@ -9,8 +9,8 @@ def test_SLAM_init():
     # "/slamdoom/libs/orbslam2/Examples/RGB-D/TUM1.yaml"
     print("Initializing SLAM...")
     slam_obj = os2.SLAM()
-    slam_obj.init("/slamdoom/libs/orbslam2/Vocabulary/ORBvoc.txt", 
-            "/root/Visual-SLAM/ORB_SLAM2 C++11 Implementation/Examples/Stereo/KITTI00-02.yaml")
+    slam_obj.init("/root/Visual-SLAM/ORBSLAM2_C++11/Vocabulary/ORBvoc.txt", 
+            "/root/Visual-SLAM/ORBSLAM2_C++11/Examples/Stereo/KITTI00-02.yaml")
     print("SLAM was successfully initialized!")
     input("Press key to continue...")
     for i in range(1000):

@@ -57,7 +57,7 @@ class SLAMClass{
 //--------------------------------Boost-Python-Code
 
 
-BOOST_PYTHON_MODULE(ORBSLAM2)
+BOOST_PYTHON_MODULE(ORBSLAM2PY)
 {
     using namespace boost::python;
     Py_Initialize(); // required by NumPy
