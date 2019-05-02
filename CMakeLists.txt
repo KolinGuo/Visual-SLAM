@@ -18,10 +18,13 @@ endif ()
 
 message("Build type: " ${CMAKE_BUILD_TYPE})
 message("CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
+message("CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
+message("PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
+message("CMAKE_CURRENT_SOURCE_DIR: " ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Building options
 #-----------------------------------------------------------------------------------------------------------------------
-option(BUILD_PYTHON3 "Build ORBSLAM2 Python3 binding instead of default Python2." OFF)
+option(BUILD_PYTHON3 "Build ORBSLAM2PY Python3 binding instead of default Python2." OFF)
 
 # CMake options
 #-----------------------------------------------------------------------------------------------------------------------
@@ -75,25 +78,25 @@ endif ()
 find_package(Boost COMPONENTS filesystem thread system date_time chrono regex iostreams REQUIRED)
 find_package(Threads REQUIRED)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-set(ORBSLAM2_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set(ORBSLAM2_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(ORBSLAM2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(ORBSLAM2_LIB_SRC_DIR ${ORBSLAM2_SRC_DIR})
-set(ORBSLAM2_LIB_INCLUDE_DIR ${ORBSLAM2_INCLUDE_DIR} ${ORBSLAM2_LIB_SRC_DIR})
-set(ORBSLAM2_OUTPUT_NAME ORBSLAM2)
+set(ORBSLAM2PY_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
+set(ORBSLAM2PY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ORBSLAM2PY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ORBSLAM2PY_LIB_SRC_DIR ${ORBSLAM2PY_SRC_DIR})
+set(ORBSLAM2PY_LIB_INCLUDE_DIR ${ORBSLAM2PY_INCLUDE_DIR} ${ORBSLAM2PY_LIB_SRC_DIR})
+set(ORBSLAM2PY_OUTPUT_NAME ORBSLAM2PY)
 
-include_directories(${ORBSLAM2_LIB_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
+include_directories(${ORBSLAM2PY_LIB_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
-set(ORBSLAM2_LIBS
+set(ORBSLAM2PY_LIBS
         ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT})
 
 if (UNIX AND NOT APPLE)
-    set(ORBSLAM2_LIBS ${ORBSLAM2_LIBS} rt)
+    set(ORBSLAM2PY_LIBS ${ORBSLAM2PY_LIBS} rt)
 endif ()
 
 #configure_file(
@@ -106,16 +109,16 @@ endif ()
 #        "${ORBSLAM2_SRC_DIR}/ORBSLAM2/src/viz_version.h"
 #)
 
-file(GLOB ORBSLAM2_LIB_SOURCES
+file(GLOB ORBSLAM2PY_LIB_SOURCES
 #        ${ORBSLAM2_INCLUDE_DIR}/*.h
 #        ${ORBSLAM2_LIB_SRC_DIR}/*.h
-        ${ORBSLAM2_LIB_SRC_DIR}/*.cpp)
+        ${ORBSLAM2PY_LIB_SRC_DIR}/*.cpp)
 
 #add_library(libORBSLAM2_static STATIC ${ORBSLAM2_LIB_SOURCES})
 #target_link_libraries(libORBSLAM2_static ${ORBSLAM2_LIBS})
 
-add_library(libORBSLAM2_shared SHARED ${ORBSLAM2_LIB_SOURCES})
-target_link_libraries(libORBSLAM2_shared ${ORBSLAM2_LIBS})
+add_library(libORBSLAM2PY_shared SHARED ${ORBSLAM2PY_LIB_SOURCES})
+target_link_libraries(libORBSLAM2PY_shared ${ORBSLAM2PY_LIBS})
 
 # set_target_properties(libORBSLAM2_static libORBSLAM2_shared
 #        PROPERTIES
@@ -136,7 +139,7 @@ target_link_libraries(libORBSLAM2_shared ${ORBSLAM2_LIBS})
 #        PROPERTIES
 #        PROJECT_LABEL "Static library")
 
-set_target_properties(libORBSLAM2_shared
+set_target_properties(libORBSLAM2PY_shared
         PROPERTIES
         PROJECT_LABEL "Shared library")
 
@@ -189,12 +192,12 @@ if (BUILD_PYTHON3)
 
     find_package(NumPy REQUIRED)
 
-    set(ORBSLAM2_PYTHON3_OUTPUT_DIR ${ORBSLAM2_OUTPUT_DIR})
-    set(ORBSLAM2_PYTHON_SRC_DIR ${ORBSLAM2_SRC_DIR})
-    set(ORBSLAM2_PYTHON_INCLUDE_DIR ${ORBSLAM2_INCLUDE_DIR} ${ORBSLAM2_PYTHON_SRC_DIR})
+    set(ORBSLAM2PY_PYTHON3_OUTPUT_DIR ${ORBSLAM2PY_OUTPUT_DIR})
+    set(ORBSLAM2PY_PYTHON_SRC_DIR ${ORBSLAM2PY_SRC_DIR})
+    set(ORBSLAM2PY_PYTHON_INCLUDE_DIR ${ORBSLAM2PY_INCLUDE_DIR} ${ORBSLAM2PY_PYTHON_SRC_DIR})
 
-    set(ORBSLAM2_PYTHON3_LIBS
-            ${ORBSLAM2_LIBS}
+    set(ORBSLAM2PY_PYTHON3_LIBS
+            ${ORBSLAM2PY_LIBS}
             ${Boost_LIBRARIES}
             ${PYTHON_LIBRARIES}
             ${NUMPY_LIBRARIES}
@@ -205,33 +208,33 @@ if (BUILD_PYTHON3)
             ${BG2O_LIBRARY}
             ${DBoW2_LIBRARY})
 
-    include_directories(${ORBSLAM2_PYTHON_INCLUDE_DIR}
+    include_directories(${ORBSLAM2PY_PYTHON_INCLUDE_DIR}
             ${Boost_INCLUDE_DIR}
             ${PYTHON_INCLUDE_DIRS}
             ${NUMPY_INCLUDES}
             ${Pangolin_INCLUDE_DIRS})
 
-    set(ORBSLAM2_PYTHON_SOURCES
+    set(ORBSLAM2PY_PYTHON_SOURCES
 #            ${ORBSLAM2_PYTHON_SRC_DIR}/ORBSLAM2GamePython.h
 #            ${ORBSLAM2_PYTHON_SRC_DIR}/ORBSLAM2GamePython.cpp
-            ${ORBSLAM2_PYTHON_SRC_DIR}/orbslam2.cpp
-            ${ORBSLAM2_PYTHON_SRC_DIR}/lib/conversion.cpp)
+            ${ORBSLAM2PY_PYTHON_SRC_DIR}/src/orbslam2.cpp
+            ${ORBSLAM2PY_PYTHON_SRC_DIR}/lib/conversion.cpp)
 
     if (WIN32)
         add_definitions(-DBOOST_PYTHON_STATIC_LIB)
     endif ()
 
-    python_add_module(libORBSLAM2_python3 ${ORBSLAM2_PYTHON_SOURCES})
-    target_link_libraries(libORBSLAM2_python3 ${ORBSLAM2_PYTHON3_LIBS} ) # libORBSLAM2_static
+    python_add_module(libORBSLAM2PY_python3 ${ORBSLAM2PY_PYTHON_SOURCES})
+    target_link_libraries(libORBSLAM2PY_python3 ${ORBSLAM2PY_PYTHON3_LIBS} ) # libORBSLAM2_static
 
-    set_target_properties(libORBSLAM2_python3
+    set_target_properties(libORBSLAM2PY_python3
             PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${ORBSLAM2_PYTHON3_OUTPUT_DIR}
-            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ORBSLAM2_PYTHON3_OUTPUT_DIR}
-            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ORBSLAM2_PYTHON3_OUTPUT_DIR}
-            LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${ORBSLAM2_PYTHON3_OUTPUT_DIR}
-            LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${ORBSLAM2_PYTHON3_OUTPUT_DIR}
-            OUTPUT_NAME ORBSLAM2
+            LIBRARY_OUTPUT_DIRECTORY ${ORBSLAM2PY_PYTHON3_OUTPUT_DIR}
+            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ORBSLAM2PY_PYTHON3_OUTPUT_DIR}
+            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ORBSLAM2PY_PYTHON3_OUTPUT_DIR}
+            LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${ORBSLAM2PY_PYTHON3_OUTPUT_DIR}
+            LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${ORBSLAM2PY_PYTHON3_OUTPUT_DIR}
+            OUTPUT_NAME ORBSLAM2PY
             PROJECT_LABEL "Python 3 binding")
 
 #    add_dependencies(libORBSLAM2_python3 ORBSLAM2 pk3 freedoom2)
@@ -247,4 +250,4 @@ if (BUILD_PYTHON3)
 
 endif ()
 
-# ------------------------------------ ORBSLAM2 section
+# ------------------------------------ ORBSLAM2PY section
