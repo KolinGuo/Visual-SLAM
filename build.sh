@@ -191,4 +191,3 @@ echo -e "\tCommmand to run ORBSLAM2 C++11 Implementation:\n"\
         "${COMMANDTORUNPYTHON}"
 echo -e "################################################################################\n"
 
-

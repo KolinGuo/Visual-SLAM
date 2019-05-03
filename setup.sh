@@ -98,7 +98,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 # Echo command to continue building ORBSLAM2
-COMMANDTOBUILD="cd /root/Visual-SLAM && bash -i ./build.sh"
+COMMANDTOBUILD="cd /root/Visual-SLAM && bash -i ./build.sh && source ~/.bashrc"
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommand to continue building ORBSLAM2:\n\t\t${COMMANDTOBUILD}\n"
