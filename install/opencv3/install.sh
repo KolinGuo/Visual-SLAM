@@ -57,7 +57,7 @@ if [ "$2" = "python3" ]; then
           -DPYTHON3_LIBRARY=/home/cs/.pyenv/versions/3.6.0/lib/libpython3.6m.a \
           -DPYTHON3_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
           ..
-    make -j16 && make install
+    make -j$(nproc) && make install
 else
     cd $1/opencv3/build
     cmake -DCMAKE_BUILD_TYPE=RELEASE \
@@ -94,5 +94,5 @@ else
           -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
           -DPYTHON_PACKAGES_PATH=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
           ..
-    make -j16 && make install
+    make -j$(nproc) && make install
 fi

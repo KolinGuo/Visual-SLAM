@@ -1,8 +1,7 @@
 # FROM defines the base image
 # FROM ubuntu16.04
 # FROM ubuntu:latest
-# FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
-FROM nvidia/cudagl:10.0-devel-ubuntu16.04
+FROM nvidia/cudagl:10.1-devel-ubuntu16.04
 
 ######################################
 # SECTION 1: Essentials              #

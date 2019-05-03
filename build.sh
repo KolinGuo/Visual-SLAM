@@ -52,9 +52,12 @@ if [ "$BUILDCLEAN" = true ] ; then
         # Remove ORBSLAM2_C++11 previous build
         echo -e "\nRemoving C++11 previous build"
         cd "$SCRIPTPATH"/ORBSLAM2_C++11
-        rm -rf build \
+        rm -rf build lib \
                 Thirdparty/DBoW2/build \
+                Thirdparty/DBoW2/lib \
                 Thirdparty/g2o/build \
+                Thirdparty/g2o/lib \
+                Thirdparty/g2o/config.h \
                 Vocabulary/ORBvoc.txt \
                 Examples/Monocular/mono_euroc \
                 Examples/Monocular/mono_kitti \
@@ -99,9 +102,12 @@ if [ "$BUILDCPLUSPLUS" = true ] ; then
         # Remove ORBSLAM2_C++11 previous build
         echo -e "Removing C++11 previous build"
         cd "$SCRIPTPATH"/ORBSLAM2_C++11
-        rm -rf build \
+        rm -rf build lib \
                 Thirdparty/DBoW2/build \
+                Thirdparty/DBoW2/lib \
                 Thirdparty/g2o/build \
+                Thirdparty/g2o/lib \
+                Thirdparty/g2o/config.h \
                 Vocabulary/ORBvoc.txt \
                 Examples/Monocular/mono_euroc \
                 Examples/Monocular/mono_kitti \
@@ -113,7 +119,6 @@ if [ "$BUILDCPLUSPLUS" = true ] ; then
         # Rebuild ORBSLAM2_C++11
         echo -e "\nBuilding C++11 Implementation"
         chmod +x build.sh
-        sleep 1
         ./build.sh
 fi
 
@@ -144,7 +149,7 @@ if [ "$BUILDPYTHON" = true ] ; then
                         >> ~/.bashrc
                 source ~/.bashrc
         fi
-        make -j16
+        make -j$(nproc)
 fi
 
 # If it's the first time build, include into PYTHONPATH
@@ -155,4 +160,16 @@ if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
                 >> ~/.bashrc
         source ~/.bashrc
 fi
+
+# Echo command to run example
+COMMANDTORUNCPLUSPLUS="cd ORBSLAM2_C++11/Examples/Stereo/KITTI_Dataset\n"
+COMMANDTORUNCPLUSPLUS+="\t./download_kitti_dataset.sh\n"
+COMMANDTORUNCPLUSPLUS+="\tcd ..\n"
+COMMANDTORUNCPLUSPLUS+="\t./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTIX.yaml "
+COMMANDTORUNCPLUSPLUS+="./KITTI_Dataset/dataset/sequences/SEQUENCE_NUMBER\n"
+COMMANDTORUNPYTHON="python3 test/test.py"
+echo -e "\nCommmand to run ORBSLAM2 C++11 Implementation:\n
+        \t${COMMANDTORUNCPLUSPLUS}\n
+        Command to run ORBSLAM2 Python Implementation:\n
+        \t${COMMANDTORUNPYTHON}\n"
 
