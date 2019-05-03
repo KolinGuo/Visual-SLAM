@@ -3,6 +3,25 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+USAGE="Usage: ./setup.sh [rm=[0,1]]\n"
+USAGE+="\trm=[0,1] : 0 to remove intermediate Docker images after a successul build and 1 otherwise\n"
+USAGE+="\t           default is 0\n"
+
+# Parsing argument
+if [] ; then
+
+fi
+
+
+
+
+# Print usage
+echo -e "\n$USAGE"
+echo -e ".......... Set up will start in 5 seconds .........."
+sleep 5
+
+
+
 
 # Build and run the image
 echo "Building image..."

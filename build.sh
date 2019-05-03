@@ -4,7 +4,9 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 USAGE="Usage: ./build.sh [c++=[0,1]] [py=[0,1]] [clean]\n"
 USAGE+="\tc++=[0,1] : 0 to not build ORBSLAM2 C++11 implementation and 1 otherwise\n"
+USAGE+="\t            default is 0\n"
 USAGE+="\tpy=[0,1]  : 0 to not build ORBSLAM2 Python implementation and 1 otherwise\n"
+USAGE+="\t            default is 1\n"
 USAGE+="\tclean     : clean both C++11 and Python previous build and don't rebuild\n"
 
 #########################################
@@ -83,6 +85,9 @@ if [[ "$BUILDCPLUSPLUS" = false && "$BUILDPYTHON" = false ]] ; then
         echo -e "$USAGE"
         exit 0
 fi
+
+# Prints out USAGE
+echo -e "\n$USAGE"
 
 echo -e ".......... Building will start in 5 seconds .........."
 sleep 5
