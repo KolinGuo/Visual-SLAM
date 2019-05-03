@@ -26,7 +26,7 @@ The setup process is separated into two shell scripts: `setup.sh` and `build.sh`
 `setup.sh` might take *more than an hour* to finish depending on your CPU power and network environment. Please be patient and **wait until it finishes completely**. 
 1. Setup Docker Environment.  
 `./setup.sh`  
-If you need `sudo` permission to run `nvidia-docker`, run `sudo -i` before running *setup.sh*.  
+If you need `sudo` permission to run `nvidia-docker`, run `sudo -s` before running *setup.sh*.  
 You should be greeted by the Docker container **orbslam2py** when this script finishes. The working directory is */root* and the repo is mounted at */root/Visual-SLAM*.  
 
 2. Build the C++11 and Python ORBSLAM2 Implementation.  
