@@ -3,26 +3,28 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-USAGE="Usage: ./setup.sh [rmimimg=[0,1]] [rmimg=[0,1]]\n"
-USAGE+="\trmimimg=[0,1] : 0 to remove intermediate Docker images\n"
-USAGE+="\t                after a successful build and 1 otherwise\n"
-USAGE+="\t                default is 1\n"
-USAGE+="\trmimg=[0,1]   : 0 to remove previously built Docker image and 1 otherwise\n"
-USAGE+="\t                default is 0\n"
+USAGE="Usage: ./setup.sh [rmimcont=[0,1]] [rmimg=[0,1]]\n"
+USAGE+="\trmimcont=[0,1] : 0 to not remove intermediate Docker containers\n"
+USAGE+="\t                 after a successful build and 1 otherwise\n"
+USAGE+="\t                 default is 1\n"
+USAGE+="\trmimg=[0,1]    : 0 to not remove previously built Docker image and 1 otherwise\n"
+USAGE+="\t                 default is 0\n"
 
 REMOVEIMDDOCKERIMAGE=true
-REMOVEIMDDOCKERIMAGECMD="--rm=true"
+REMOVEIMDDOCKERCONTAINER=true
+REMOVEIMDDOCKERCONTAINERCMD="--rm=true"
 REMOVEPREVDOCKERIMAGE=false
 
 # Parsing argument
 if [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do
-                if [ "$1" = "rmimimg=0" ] ; then
+                if [ "$1" = "rmimcont=0" ] ; then
                         REMOVEIMDDOCKERIMAGE=false
-                        REMOVEIMDDOCKERIMAGECMD="--rm=false"
+                        REMOVEIMDDOCKERCONTAINER=false
+                        REMOVEIMDDOCKERCONTAINERCMD="--rm=false"
                 elif [ "$1" = "rmimg=1" ] ; then
                         REMOVEPREVDOCKERIMAGE=true
-                elif [[ "$1" != "rmimimg=1" && "$1" != "rmimg=0" ]] ; then
+                elif [[ "$1" != "rmimcont=1" && "$1" != "rmimg=0" ]] ; then
                         echo -e "UNknown argument: " $1
                         echo -e "$USAGE"
                         exit 1
@@ -35,10 +37,10 @@ fi
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tSet Up Information\n"
-if [ "$REMOVEIMDDOCKERIMAGE" = true ] ; then
-        echo -e "\t\tRemove all intermediate Docker images after a successful build\n"
+if [ "$REMOVEIMDDOCKERCONTAINER" = true ] ; then
+        echo -e "\t\tRemove all intermediate Docker containers after a successful build\n"
 else
-        echo -e "\t\tKeep all intermediate Docker images after a successful build\n"
+        echo -e "\t\tKeep all intermediate Docker containers after a successful build\n"
 fi
 if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
         echo -e "\t\tCautious!! Remove previously built Docker image\n"
@@ -61,7 +63,7 @@ fi
 
 # Build and run the image
 echo -e "\nBuilding image..."
-nvidia-docker build $REMOVEIMDDOCKERIMAGECMD -t orbslam2py .
+nvidia-docker build $REMOVEIMDDOCKERCONTAINERCMD -t orbslam2py .
 
 if [ $? -ne 0 ] ; then
         echo -e "\nFailed to build Docker image... Exiting...\n"
