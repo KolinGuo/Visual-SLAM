@@ -187,7 +187,7 @@ echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommmand to run ORBSLAM2 C++11 Implementation:\n"\
         "${COMMANDTORUNCPLUSPLUS}"\
-        "\tCommand to run ORBSLAM2 Python Implementation:\n"\
+        "\n\tCommand to run ORBSLAM2 Python Implementation:\n"\
         "${COMMANDTORUNPYTHON}"
 echo -e "################################################################################\n"
 
