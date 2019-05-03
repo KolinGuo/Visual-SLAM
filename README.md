@@ -32,7 +32,8 @@ You should be greeted by the Docker container **orbslam2py** when this script fi
 2. Build the C++11 and Python ORBSLAM2 Implementation.  
 `cd /root/Visual-SLAM && bash -i ./build.sh && source ~/.bashrc`  
 This script should be running in a Docker container to gain access to dependencies. It needs to be run interactively with `-i` option so that it can do `source ~/.bashrc`.  
-Instructions on how to run C++11 and Python implementation will be printed when this script finishes. 
+Instructions on how to run C++11 and Python implementation will be printed when this script finishes.  
+If failed to open X display, run `xhost +` on local computer. 
 
 
 ## Notes
