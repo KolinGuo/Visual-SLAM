@@ -25,7 +25,7 @@ The list of prerequisites for building and running this repository is described 
 The setup process is separated into two shell scripts: `setup.sh` and `build.sh`. Both have some command-line arguments that you can specify to config them. See the printed out usage for details.   
 `setup.sh` might take *more than an hour* to finish depending on your CPU power and network environment. Please be patient and **wait until it finishes completely**. 
 1. Setup Docker Environment.  
-`./setup.sh`  
+`bash ./setup.sh`  
 If you need `sudo` permission to run `nvidia-docker`, run `sudo -s` before running *setup.sh*.  
 You should be greeted by the Docker container **orbslam2py** when this script finishes. The working directory is */root* and the repo is mounted at */root/Visual-SLAM*.  
 
