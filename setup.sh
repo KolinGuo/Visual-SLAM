@@ -7,11 +7,10 @@ USAGE="Usage: ./setup.sh [rmimcont=[0,1]] [rmimg=[0,1]]\n"
 USAGE+="\trmimcont=[0,1] : 0 to not remove intermediate Docker containers\n"
 USAGE+="\t                 after a successful build and 1 otherwise\n"
 USAGE+="\t                 default is 1\n"
-USAGE+="\trmimg=[0,1]    : 0 to not remove previously built Docker image and 1 otherwise\n"
-USAGE+="\t                 default is 0\n"
+USAGE+="\trmimg=[0,1]    : 0 to not remove previously built Docker image\n"
+USAGE+="\t                 and 1 otherwise\n"
+USAGE+="\t                 default is 1\n"
 
-REMOVEIMDDOCKERIMAGE=true
-REMOVEIMDDOCKERCONTAINER=true
 REMOVEIMDDOCKERCONTAINERCMD="--rm=true"
 REMOVEPREVDOCKERIMAGE=false
 
@@ -19,8 +18,6 @@ REMOVEPREVDOCKERIMAGE=false
 if [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do
                 if [ "$1" = "rmimcont=0" ] ; then
-                        REMOVEIMDDOCKERIMAGE=false
-                        REMOVEIMDDOCKERCONTAINER=false
                         REMOVEIMDDOCKERCONTAINERCMD="--rm=false"
                 elif [ "$1" = "rmimg=1" ] ; then
                         REMOVEPREVDOCKERIMAGE=true
@@ -37,10 +34,10 @@ fi
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tSet Up Information\n"
-if [ "$REMOVEIMDDOCKERCONTAINER" = true ] ; then
-        echo -e "\t\tRemove all intermediate Docker containers after a successful build\n"
+if [ "$REMOVEIMDDOCKERCONTAINERCMD" = "--rm=true" ] ; then
+        echo -e "\t\tRemove intermediate Docker containers after a successful build\n"
 else
-        echo -e "\t\tKeep all intermediate Docker containers after a successful build\n"
+        echo -e "\t\tKeep intermediate Docker containers after a successful build\n"
 fi
 if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
         echo -e "\t\tCautious!! Remove previously built Docker image\n"
@@ -70,17 +67,6 @@ if [ $? -ne 0 ] ; then
         exit 1
 fi
 
-# Remove intermediate Docker images
-if [[ "$REMOVEIMDDOCKERIMAGE" = true ]] ; then
-        echo -e "\nRemoving intermediate images..."
-        DOCKERIMAGES=$(docker images | grep "<none>" | \
-                sort -n -r -k4,4 | egrep -oh '[[:alnum:]]{12}')
-        for image in $DOCKERIMAGES ; do
-                echo -e "Removing image" $image
-                nvidia-docker rmi -f $image
-        done
-fi
-
 # Build a container from the image
 echo -e "\nRemoving older container..."
 if [ 1 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
@@ -100,10 +86,12 @@ if [ $? -ne 0 ] ; then
 fi
 
 # Echo command to continue building ORBSLAM2
-COMMANDTOBUILD="cd /root/Visual-SLAM && bash -i ./build.sh && source ~/.bashrc"
+COMMANDTOBUILDFIRST="cd /root/Visual-SLAM && bash -i ./build.sh && source ~/.bashrc"
+COMMANDTOBUILD="cd /root/Visual-SLAM && ./build.sh"
 echo -e "\n\n"
 echo -e "################################################################################\n"
-echo -e "\tCommand to continue building ORBSLAM2:\n\t\t${COMMANDTOBUILD}\n"
+echo -e "\tCommand to continue building ORBSLAM2 for the first time:\n\t\t${COMMANDTOBUILDFIRST}\n"
+echo -e "\tCommand to build ORBSLAM2 after the first time:\n\t\t${COMMANDTOBUILD}\n"
 echo -e "################################################################################\n"
 
 nvidia-docker start -ai orbslam2py
