@@ -9,7 +9,7 @@ USAGE+="\t                 after a successful build and 1 otherwise\n"
 USAGE+="\t                 default is 1\n"
 USAGE+="\trmimg=[0,1]    : 0 to not remove previously built Docker image\n"
 USAGE+="\t                 and 1 otherwise\n"
-USAGE+="\t                 default is 1\n"
+USAGE+="\t                 default is 0\n"
 
 REMOVEIMDDOCKERCONTAINERCMD="--rm=true"
 REMOVEPREVDOCKERIMAGE=false
