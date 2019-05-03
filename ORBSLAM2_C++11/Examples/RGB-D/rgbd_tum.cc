@@ -18,7 +18,7 @@
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+#include<unistd.h>
 #include<iostream>
 #include<algorithm>
 #include<fstream>
@@ -30,27 +30,39 @@
 
 using namespace std;
 
-void LoadImages(const string &strFile, vector<string> &vstrImageFilenames,
-                vector<double> &vTimestamps);
+void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+    if(argc != 5)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
+        cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
     }
 
     // Retrieve paths to images
-    vector<string> vstrImageFilenames;
+    vector<string> vstrImageFilenamesRGB;
+    vector<string> vstrImageFilenamesD;
     vector<double> vTimestamps;
-    string strFile = string(argv[3])+"/rgb.txt";
-    LoadImages(strFile, vstrImageFilenames, vTimestamps);
+    string strAssociationFilename = string(argv[4]);
+    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps);
 
-    int nImages = vstrImageFilenames.size();
+    // Check consistency in the number of images and depthmaps
+    int nImages = vstrImageFilenamesRGB.size();
+    if(vstrImageFilenamesRGB.empty())
+    {
+        cerr << endl << "No images found in provided path." << endl;
+        return 1;
+    }
+    else if(vstrImageFilenamesD.size()!=vstrImageFilenamesRGB.size())
+    {
+        cerr << endl << "Different number of images for rgb and depth." << endl;
+        return 1;
+    }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -61,17 +73,18 @@ int main(int argc, char **argv)
     cout << "Images in the sequence: " << nImages << endl << endl;
 
     // Main loop
-    cv::Mat im;
+    cv::Mat imRGB, imD;
     for(int ni=0; ni<nImages; ni++)
     {
-        // Read image from file
-        im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
+        // Read image and depthmap from file
+        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],CV_LOAD_IMAGE_UNCHANGED);
+        imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],CV_LOAD_IMAGE_UNCHANGED);
         double tframe = vTimestamps[ni];
 
-        if(im.empty())
+        if(imRGB.empty())
         {
             cerr << endl << "Failed to load image at: "
-                 << string(argv[3]) << "/" << vstrImageFilenames[ni] << endl;
+                 << string(argv[3]) << "/" << vstrImageFilenamesRGB[ni] << endl;
             return 1;
         }
 
@@ -82,7 +95,7 @@ int main(int argc, char **argv)
 #endif
 
         // Pass the image to the SLAM system
-        SLAM.TrackMonocular(im,tframe);
+        SLAM.TrackRGBD(imRGB,imD,tframe);
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -120,36 +133,35 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");   
 
     return 0;
 }
 
-void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vector<double> &vTimestamps)
+void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps)
 {
-    ifstream f;
-    f.open(strFile.c_str());
-
-    // skip first three lines
-    string s0;
-    getline(f,s0);
-    getline(f,s0);
-    getline(f,s0);
-
-    while(!f.eof())
+    ifstream fAssociation;
+    fAssociation.open(strAssociationFilename.c_str());
+    while(!fAssociation.eof())
     {
         string s;
-        getline(f,s);
+        getline(fAssociation,s);
         if(!s.empty())
         {
             stringstream ss;
             ss << s;
             double t;
-            string sRGB;
+            string sRGB, sD;
             ss >> t;
             vTimestamps.push_back(t);
             ss >> sRGB;
-            vstrImageFilenames.push_back(sRGB);
+            vstrImageFilenamesRGB.push_back(sRGB);
+            ss >> t;
+            ss >> sD;
+            vstrImageFilenamesD.push_back(sD);
+
         }
     }
 }
