@@ -19,7 +19,7 @@ if [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do
                 if [ "$1" = "rmimimg=0" ] ; then
                         REMOVEIMDDOCKERIMAGE=false
-                        REMOVEIMDDOCKERIMAGECMD=""
+                        REMOVEIMDDOCKERIMAGECMD="--rm=false"
                 elif [ "$1" = "rmimg=1" ] ; then
                         REMOVEPREVDOCKERIMAGE=true
                 elif [[ "$1" != "rmimimg=1" && "$1" != "rmimg=0" ]] ; then
@@ -37,9 +37,13 @@ echo -e "#######################################################################
 echo -e "\tSet Up Information\n"
 if [ "$REMOVEIMDDOCKERIMAGE" = true ] ; then
         echo -e "\t\tRemove all intermediate Docker images after a successful build\n"
+else
+        echo -e "\t\tKeep all intermediate Docker images after a successful build\n"
 fi
 if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
         echo -e "\t\tCautious!! Remove previously built Docker image\n"
+else
+        echo -e "\t\tKeep previously built Docker image\n"
 fi
 echo -e "################################################################################\n"
 
@@ -94,7 +98,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 # Echo command to continue building ORBSLAM2
-COMMANDTOBUILD="cd /root/Visual-SLAM && ./build.sh"
+COMMANDTOBUILD="cd /root/Visual-SLAM && bash -i ./build.sh"
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommand to continue building ORBSLAM2:\n\t\t${COMMANDTOBUILD}\n"
@@ -102,7 +106,7 @@ echo -e "#######################################################################
 
 nvidia-docker start -ai orbslam2py
 
-if [ $? -ne 0 ] ; then
+if [ 0 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
         echo -e "\nFailed to start/attach Docker container... Exiting...\n"
         exit 1
 fi
