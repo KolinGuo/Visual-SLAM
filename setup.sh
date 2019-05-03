@@ -3,45 +3,75 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-USAGE="Usage: ./setup.sh [rm=[0,1]]\n"
-USAGE+="\trm=[0,1] : 0 to remove intermediate Docker images after a successful build and 1 otherwise\n"
-USAGE+="\t           default is 0\n"
+USAGE="Usage: ./setup.sh [rmimimg=[0,1]] [rmimg=[0,1]]\n"
+USAGE+="\trmimimg=[0,1] : 0 to remove intermediate Docker images\n"
+USAGE+="\t                after a successful build and 1 otherwise\n"
+USAGE+="\t                default is 1\n"
+USAGE+="\trmimg=[0,1]   : 0 to remove previously built Docker image and 1 otherwise\n"
+USAGE+="\t                default is 0\n"
 
-REMOVEDOCKERIMAGE=false
+REMOVEIMDDOCKERIMAGE=true
+REMOVEIMDDOCKERIMAGECMD="--rm=true"
+REMOVEPREVDOCKERIMAGE=false
 
 # Parsing argument
 if [ $# -ne 0 ] ; then
-        if [ "$1" = "rm=1" ] ; then
-                REMOVEDOCKERIMAGE=true
-        elif [ "$1" != "rm=0" ] ; then
-                echo -e "UNknown argument: " $1
-                echo -e "$USAGE"
-                exit 1
-        fi
+        while [ ! -z $1 ] ; do
+                if [ "$1" = "rmimimg=0" ] ; then
+                        REMOVEIMDDOCKERIMAGE=false
+                        REMOVEIMDDOCKERIMAGECMD=""
+                elif [ "$1" = "rmimg=1" ] ; then
+                        REMOVEPREVDOCKERIMAGE=true
+                elif [[ "$1" != "rmimimg=1" && "$1" != "rmimg=0" ]] ; then
+                        echo -e "UNknown argument: " $1
+                        echo -e "$USAGE"
+                        exit 1
+                fi
+                shift
+        done
 fi
 
 # Echo the set up information
-if [ "$REMOVEDOCKERIMAGE" = true ] ; then
-        echo -e "Remove all intermediate Docker images after a successful build"
+echo -e "\n\n"
+echo -e "################################################################################\n"
+echo -e "\tSet Up Information\n"
+if [ "$REMOVEIMDDOCKERIMAGE" = true ] ; then
+        echo -e "\t\tRemove all intermediate Docker images after a successful build\n"
 fi
+if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
+        echo -e "\t\tCautious!! Remove previously built Docker image\n"
+fi
+echo -e "################################################################################\n"
 
 # Print usage
-echo -e "\n$USAGE"
+echo -e "\n$USAGE\n"
+
 echo -e ".......... Set up will start in 5 seconds .........."
 sleep 5
 
+# Remove previously built Docker image
+if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
+        echo -e "\nRemoving previously built image..."
+        nvidia-docker rmi -f orbslam2py
+fi
+
 # Build and run the image
 echo -e "\nBuilding image..."
-nvidia-docker build --rm=true -t orbslam2py .
+nvidia-docker build $REMOVEIMDDOCKERIMAGECMD -t orbslam2py .
+
+if [ $? -ne 0 ] ; then
+        echo -e "\nFailed to build Docker image... Exiting...\n"
+        exit 1
+fi
 
 # Remove intermediate Docker images
-if [[ "$REMOVEDOCKERIMAGE" = true && $? -eq 0 ]] ; then
+if [[ "$REMOVEIMDDOCKERIMAGE" = true ]] ; then
         echo -e "\nRemoving intermediate images..."
         DOCKERIMAGES=$(docker images | grep "<none>" | \
                 sort -n -r -k4,4 | egrep -oh '[[:alnum:]]{12}')
         for image in $DOCKERIMAGES ; do
                 echo -e "Removing image" $image
-                docker rmi -f $image
+                nvidia-docker rmi -f $image
         done
 fi
 
@@ -58,8 +88,29 @@ nvidia-docker create -it --name=orbslam2py \
         -e DISPLAY=$DISPLAY \
 	orbslam2py /bin/bash
 
+if [ $? -ne 0 ] ; then
+        echo -e "\nFailed to create Docker container... Exiting...\n"
+        exit 1
+fi
+
+# Echo command to continue building ORBSLAM2
+COMMANDTOBUILD="cd /root/Visual-SLAM && ./build.sh"
+echo -e "\n\n"
+echo -e "################################################################################\n"
+echo -e "\tCommand to continue building ORBSLAM2:\n\t\t${COMMANDTOBUILD}\n"
+echo -e "################################################################################\n"
+
 nvidia-docker start -ai orbslam2py
+
+if [ $? -ne 0 ] ; then
+        echo -e "\nFailed to start/attach Docker container... Exiting...\n"
+        exit 1
+fi
 
 # Echo command to start container
 COMMANDTOSTARTCONTAINER="nvidia-docker start -ai orbslam2py"
-echo -e "\nCommand to start Docker container:\n\t${COMMANDTOSTARTCONTAINER}\n"
+echo -e "\n\n"
+echo -e "################################################################################\n"
+echo -e "\tCommand to start Docker container:\n\t\t${COMMANDTOSTARTCONTAINER}\n"
+echo -e "################################################################################\n"
+

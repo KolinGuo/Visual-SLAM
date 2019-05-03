@@ -26,16 +26,12 @@ elif [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do
                 if [ "$1" = "c++=1" ] ; then    # Build C++ 
                         BUILDCPLUSPLUS=true
-                elif [ "$1" = "c++=0" ]; then   # Don't build C++
-                        BUILDCPLUSPLUS=false
-                elif [ "$1" = "py=1" ] ; then   # Build python wrapper
-                        BUILDPYTHON=true
                 elif [ "$1" = "py=0" ] ; then   # Don't build python wrapper
                         BUILDPYTHON=false
                 elif [ "$1" = "clean" ] ; then  # Clean previous builds only
                         BUILDCLEAN=true
                         break
-                else
+                elif [[ "$1" != "c++=0" && "$1" != "py=1" ]] ; then
                         echo -e "Unknown argument: " $1
                         echo -e "$USAGE"
                         exit 1
@@ -48,9 +44,9 @@ fi
 #       Start the Clean Process         #
 #########################################
 if [ "$BUILDCLEAN" = true ] ; then
-        echo -e "No build will be done, only cleaning"
+        echo -e "\nNo build will be done, only cleaning\n"
         # Remove ORBSLAM2_C++11 previous build
-        echo -e "\nRemoving C++11 previous build"
+        echo -e "\nRemoving C++11 previous build..."
         cd "$SCRIPTPATH"/ORBSLAM2_C++11
         rm -rf build lib \
                 Thirdparty/DBoW2/build \
@@ -67,7 +63,7 @@ if [ "$BUILDCLEAN" = true ] ; then
                 Examples/Stereo/stereo_kitti 
 
         # Remove python wrapper previous build
-        echo -e "\nRemoving Python previous build"
+        echo -e "\nRemoving Python previous build..."
         cd "$SCRIPTPATH"
         rm -rf bin build
         
@@ -75,22 +71,27 @@ if [ "$BUILDCLEAN" = true ] ; then
 fi
 
 # Echo the building information
+echo -e "\n\n"
+echo -e "################################################################################\n"
+echo -e "\tBuilding Information\n"
 if [ "$BUILDCPLUSPLUS" = true ] ; then
-        echo -e "Building C++11 Implementation"
+        echo -e "\t\tBuild C++11 Implementation\n"
 fi
 
 if [ "$BUILDPYTHON" = true ] ; then
-        echo -e "Building Python Implementation"
+        echo -e "\t\tBuild Python Implementation\n"
 fi
 
 if [[ "$BUILDCPLUSPLUS" = false && "$BUILDPYTHON" = false ]] ; then
-        echo -e "No build is specified\nExiting"
-        echo -e "$USAGE"
+        echo -e "\t\tNo build is specified... Exiting...\n"
+        echo -e "################################################################################\n"
+        echo -e "\n$USAGE\n"
         exit 0
 fi
+echo -e "################################################################################\n"
 
 # Prints out USAGE
-echo -e "\n$USAGE"
+echo -e "\n$USAGE\n"
 
 echo -e ".......... Building will start in 5 seconds .........."
 sleep 5
@@ -100,7 +101,7 @@ sleep 5
 #########################################
 if [ "$BUILDCPLUSPLUS" = true ] ; then
         # Remove ORBSLAM2_C++11 previous build
-        echo -e "Removing C++11 previous build"
+        echo -e "\nRemoving C++11 previous build..."
         cd "$SCRIPTPATH"/ORBSLAM2_C++11
         rm -rf build lib \
                 Thirdparty/DBoW2/build \
@@ -117,19 +118,23 @@ if [ "$BUILDCPLUSPLUS" = true ] ; then
                 Examples/Stereo/stereo_kitti 
         
         # Rebuild ORBSLAM2_C++11
-        echo -e "\nBuilding C++11 Implementation"
+        echo -e "\nBuilding C++11 Implementation..."
         chmod +x build.sh
         ./build.sh
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to build C++11 Implementation... Exiting...\n"
+                exit 1
+        fi
 fi
 
 if [ "$BUILDPYTHON" = true ] ; then
         # Remove python wrapper previous build
-        echo -e "\nRemoving Python previous build"
+        echo -e "\nRemoving Python previous build..."
         cd "$SCRIPTPATH"
         rm -rf bin build
         
         # Build python wrapper
-        echo -e "\nBuilding Python Implementation"
+        echo -e "\nBuilding Python Implementation..."
         mkdir build
         cd build
         cmake -DBUILD_PYTHON3=ON \
@@ -140,6 +145,11 @@ if [ "$BUILDPYTHON" = true ] ; then
                 -DBG2O_LIBRARY="$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/g2o/lib/libg2o.so \
                 -DDBoW2_LIBRARY="$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/DBoW2/lib/libDBoW2.so \
                 ..
+
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to cmake Python Implementation... Exiting...\n"
+                exit 1
+        fi
         
         # If it's the first time build, add environment variable
         if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
@@ -150,6 +160,11 @@ if [ "$BUILDPYTHON" = true ] ; then
                 source ~/.bashrc
         fi
         make -j$(nproc)
+
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to make Python Implementation... Exiting...\n"
+                exit 1
+        fi
 fi
 
 # If it's the first time build, include into PYTHONPATH
@@ -162,14 +177,19 @@ if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
 fi
 
 # Echo command to run example
-COMMANDTORUNCPLUSPLUS="cd ORBSLAM2_C++11/Examples/Stereo/KITTI_Dataset\n"
-COMMANDTORUNCPLUSPLUS+="\t./download_kitti_dataset.sh\n"
-COMMANDTORUNCPLUSPLUS+="\tcd ..\n"
-COMMANDTORUNCPLUSPLUS+="\t./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTIX.yaml "
-COMMANDTORUNCPLUSPLUS+="./KITTI_Dataset/dataset/sequences/SEQUENCE_NUMBER\n"
-COMMANDTORUNPYTHON="python3 test/test.py"
-echo -e "\nCommmand to run ORBSLAM2 C++11 Implementation:\n
-        \t${COMMANDTORUNCPLUSPLUS}\n
-        Command to run ORBSLAM2 Python Implementation:\n
-        \t${COMMANDTORUNPYTHON}\n"
+COMMANDTORUNCPLUSPLUS="\t\tcd ORBSLAM2_C++11/Examples/Stereo/KITTI_Dataset\n"
+COMMANDTORUNCPLUSPLUS+="\t\t./download_kitti_dataset.sh\n"
+COMMANDTORUNCPLUSPLUS+="\t\tcd ..\n"
+COMMANDTORUNCPLUSPLUS+="\t\t./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTIX.yaml \\ \n"
+COMMANDTORUNCPLUSPLUS+="\t\t\t./KITTI_Dataset/dataset/sequences/SEQUENCE_NUMBER\n"
+COMMANDTORUNPYTHON="\t\tpython3 test/test.py\n"
+echo -e "\n\n"
+echo -e "################################################################################\n"
+echo -e "\tCommmand to run ORBSLAM2 C++11 Implementation:\n"\
+        "${COMMANDTORUNCPLUSPLUS}"\
+        "\tCommand to run ORBSLAM2 Python Implementation:\n"\
+        "${COMMANDTORUNPYTHON}"
+echo -e "################################################################################\n"
+
+source ~/.bashrc
 
