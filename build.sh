@@ -2,7 +2,10 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-USAGE="Usage: ./build.sh [c++=[0,1]] [py=[0,1]] [clean]"
+USAGE="Usage: ./build.sh [c++=[0,1]] [py=[0,1]] [clean]\n"
+USAGE+="\tc++=[0,1] : 0 to not build ORBSLAM2 C++11 implementation and 1 otherwise\n"
+USAGE+="\tpy=[0,1]  : 0 to not build ORBSLAM2 Python implementation and 1 otherwise\n"
+USAGE+="\tclean     : clean both C++11 and Python previous build and don't rebuild\n"
 
 #########################################
 #        Configurate the Build          #
@@ -27,12 +30,12 @@ elif [ $# -ne 0 ] ; then
                         BUILDPYTHON=true
                 elif [ "$1" = "py=0" ] ; then   # Don't build python wrapper
                         BUILDPYTHON=false
-                elif [ "$1" = "clean" ] ; then  # Clean previous builds
+                elif [ "$1" = "clean" ] ; then  # Clean previous builds only
                         BUILDCLEAN=true
                         break
                 else
                         echo -e "Unknown argument: " $1
-                        echo -e $USAGE
+                        echo -e "$USAGE"
                         exit 1
                 fi
                 shift   # shift $2 to $n to be renamed $1 to $(n-1)
@@ -42,9 +45,29 @@ fi
 #########################################
 #       Start the Clean Process         #
 #########################################
+if [ "$BUILDCLEAN" = true ] ; then
+        echo -e "No build will be done, only cleaning"
+        # Remove ORBSLAM2_C++11 previous build
+        echo -e "\nRemoving C++11 previous build"
+        cd "$SCRIPTPATH"/ORBSLAM2_C++11
+        rm -rf build \
+                Thirdparty/DBoW2/build \
+                Thirdparty/g2o/build \
+                Vocabulary/ORBvoc.txt \
+                Examples/Monocular/mono_euroc \
+                Examples/Monocular/mono_kitti \
+                Examples/Monocular/mono_tum \
+                Examples/RGB-D/rgbd_tum \
+                Examples/Stereo/stereo_euroc \
+                Examples/Stereo/stereo_kitti 
 
-
-
+        # Remove python wrapper previous build
+        echo -e "\nRemoving Python previous build"
+        cd "$SCRIPTPATH"
+        rm -rf bin build
+        
+        exit 0
+fi
 
 # Echo the building information
 if [ "$BUILDCPLUSPLUS" = true ] ; then
@@ -55,8 +78,9 @@ if [ "$BUILDPYTHON" = true ] ; then
         echo -e "Building Python Implementation"
 fi
 
-if [[ "$BUILDCPLUSPLUS" = "false" && "$BUILDPYTHON" = "false" ]] ; then
+if [[ "$BUILDCPLUSPLUS" = false && "$BUILDPYTHON" = false ]] ; then
         echo -e "No build is specified\nExiting"
+        echo -e "$USAGE"
         exit 0
 fi
 
