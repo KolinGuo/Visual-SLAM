@@ -22,7 +22,7 @@ if [ $# -ne 0 ] ; then
                 elif [ "$1" = "rmimg=1" ] ; then
                         REMOVEPREVDOCKERIMAGE=true
                 elif [[ "$1" != "rmimcont=1" && "$1" != "rmimg=0" ]] ; then
-                        echo -e "UNknown argument: " $1
+                        echo -e "Unknown argument: " $1
                         echo -e "$USAGE"
                         exit 1
                 fi
