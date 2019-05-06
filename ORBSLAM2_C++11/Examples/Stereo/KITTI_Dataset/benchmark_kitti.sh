@@ -168,13 +168,11 @@ if [ "$BMCPLUSPLUS" = true ] ; then
   for seq in $(echo -e $SEQUENCELISTCPLUSPLUS) ; do
     # Run implementation
     if [[ "$seq" =~ ^0[0-2]$ ]] ; then
-      BMCPLUSPLUSCMD00_02+="$seq"
-      $BMCPLUSPLUSCMD00_02
+      $BMCPLUSPLUSCMD00_02$seq
     elif [[ "$seq" =~ ^03$ ]] ; then
       $BMCPLUSPLUSCMD03
     elif [[ "$seq" =~ ^(0[4-9]|10)$ ]] ; then
-      BMCPLUSPLUSCMD04_12+="$seq"
-      $BMCPLUSPLUSCMD04_12
+      $BMCPLUSPLUSCMD04_12$seq
     else
       echo -e "\nWrong sequence number $seq\n"
       exit 1
