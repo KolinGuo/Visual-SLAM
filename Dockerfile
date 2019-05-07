@@ -94,7 +94,7 @@ RUN apt-get update && apt-get install -y \
         sphinx-common libv4l-dev libdc1394-22-dev \
         libavcodec-dev libavformat-dev libswscale-dev \
         libglew-dev libboost-dev libboost-python-dev libboost-serialization-dev \
-        htop nano unzip gnuplot ghostscript texlive-extra-utils \
+        htop nano unzip gnuplot ghostscript texlive-extra-utils python3-matplotlib \
 && apt-get -y upgrade \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
