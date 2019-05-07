@@ -82,8 +82,8 @@ def main():
                 np.mean(totRotError)   , np.amin(totRotError)   , np.amax(totRotError)   , np.std(totRotError)    ))
     totTimesFile.write('-' * 129 + '\n')
     totTimesFile.write('avg\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\n' 
-            % ( np.mean(totMedianTime) , np.amin(totMedianTime) , np.amax(totMedianTime) , np.std(totMedianTime) ,
-                np.mean(totMeanTime)   , np.amin(totMeanTime)   , np.amax(totMeanTime)   , np.std(totMeanTime)    ))
+            % ( np.median(totMedianTime) , np.amin(totMedianTime) , np.amax(totMedianTime) , np.std(totMedianTime) ,
+                np.mean(totMeanTime)     , np.amin(totMeanTime)   , np.amax(totMeanTime)   , np.std(totMeanTime)    ))
 
     totStatsFile.close()
     totTimesFile.close()
