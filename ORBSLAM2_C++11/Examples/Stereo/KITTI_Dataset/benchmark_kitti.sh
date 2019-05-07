@@ -114,9 +114,9 @@ while [ $loopcount -lt $iter ] ; do
 if [ "$BMMULTITER" = true ] ; then
   SEQUENCELISTCPLUSPLUS=$SEQUENCELIST
   SEQUENCELISTPYTHON=$SEQUENCELIST
-  if [ $iter -ge 10 ] ; then
+  if [ $iter -gt 10 ] ; then
     printfcmd="%02d"
-  elif [ $iter -ge 100 ] ; then
+  elif [ $iter -gt 100 ] ; then
     printfcmd="%03d"
   else    # Assume no iteration larger than 999
     printfcmd="%01d"

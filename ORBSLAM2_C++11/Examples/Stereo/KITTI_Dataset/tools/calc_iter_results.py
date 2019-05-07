@@ -24,7 +24,7 @@ def main():
     totStatsFile.write('Seq #\tmean\t\tlow\t\thigh\t\tstd\t\tmean\t\tlow\t\thigh\t\tstd\n')
     totTimesFile.write('\t\t\t\t\t\t\tTracking Time\n')
     totTimesFile.write('\t\t\t\tmedian\t\t\t\t\t\t\t\tmean\n')
-    totTimesFile.write('Seq #\tmean\t\tlow\t\thigh\t\tstd\t\tmean\t\tlow\t\thigh\t\tstd\n')
+    totTimesFile.write('Seq #\tmedian\t\tlow\t\thigh\t\tstd\t\tmean\t\tlow\t\thigh\t\tstd\n')
 
     seqNum = file_len(sys.argv[1]+'/'+os.listdir(sys.argv[1])[0]+'/'+"stats.txt") - 4
     seqCount = 0
@@ -65,8 +65,8 @@ def main():
                 % ( np.mean(transError) , np.amin(transError) , np.amax(transError) , np.std(transError) ,
                     np.mean(rotError)   , np.amin(rotError)   , np.amax(rotError)   , np.std(rotError)    ))
         totTimesFile.write('\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\t%.7f\n' 
-                % ( np.mean(medianTime) , np.amin(medianTime) , np.amax(medianTime) , np.std(medianTime) ,
-                    np.mean(meanTime)   , np.amin(meanTime)   , np.amax(meanTime)   , np.std(meanTime)    ))
+                % ( np.median(medianTime) , np.amin(medianTime) , np.amax(medianTime) , np.std(medianTime) ,
+                    np.mean(meanTime)     , np.amin(meanTime)   , np.amax(meanTime)   , np.std(meanTime)    ))
 
         # Save to total result
         totTransError = np.append(totTransError, transError)
