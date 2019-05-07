@@ -35,4 +35,4 @@ Examples/Stereo/EuRoC_Dataset/V2_01_easy
 Examples/Stereo/EuRoC_Dataset/V2_02_medium
 Examples/Stereo/EuRoC_Dataset/V2_03_difficult
 Examples/Stereo/KITTI_Dataset/dataset/sequences
-
+Examples/Stereo/KITTI_Dataset/devkit/cpp/evaluate_result
