@@ -86,22 +86,40 @@ if [ $iter -gt 1 ] ; then
   BMMULTITER=true
   RESULTCPLUSPLUSDIR=$(realpath "$SCRIPTPATH/resultsC++")
   RESULTPYTHONDIR=$(realpath "$SCRIPTPATH/resultsPy")
-  if [[ -d "$RESULTCPLUSPLUSDIR" || -d "$RESULTPYTHONDIR" ]] ; then
-    echo -ne "\nAll contents in\n\t$RESULTCPLUSPLUSDIR\nand\n\t$RESULTPYTHONDIR\n"
-    echo -e "will be deleted."
-    echo -e "Press 'y' to continue, and 'q' to quit and save them somewhere else"
-    read option
-    if [ "$option" = y ] ; then
-      rm -rf "$RESULTCPLUSPLUSDIR" "$RESULTPYTHONDIR"
-    elif [ "$option" = q ] ; then
-      exit 0
-    else
-      echo -e "\nUnknown command... Exiting...\n"
-      exit 1
+  if [ "$BMCPLUSPLUS" = true ] ; then
+    if [ -d "$RESULTCPLUSPLUSDIR" ] ; then
+      echo -ne "\nAll contents in\n\t$RESULTCPLUSPLUSDIR\n"
+      echo -e "will be deleted."
+      echo -e "Press 'y' to continue, and 'q' to quit and save them somewhere else"
+      read option
+      if [ "$option" = y ] ; then
+        rm -rf "$RESULTCPLUSPLUSDIR"
+      elif [ "$option" = q ] ; then
+        exit 0
+      else
+        echo -e "\nUnknown command... Exiting...\n"
+        exit 1
+      fi
     fi
+    mkdir -p "$RESULTCPLUSPLUSDIR"
   fi
-  mkdir -p "$RESULTCPLUSPLUSDIR"
-  mkdir -p "$RESULTPYTHONDIR"
+  if [ "$BMPYTHON" = true ] ; then
+    if [ -d "$RESULTPYTHONDIR" ] ; then
+      echo -ne "\nAll contents in\n\t$RESULTPYTHONDIR\n"
+      echo -e "will be deleted."
+      echo -e "Press 'y' to continue, and 'q' to quit and save them somewhere else"
+      read option
+      if [ "$option" = y ] ; then
+        rm -rf "$RESULTPYTHONDIR"
+      elif [ "$option" = q ] ; then
+        exit 0
+      else
+        echo -e "\nUnknown command... Exiting...\n"
+        exit 1
+      fi
+    fi
+    mkdir -p "$RESULTPYTHONDIR"
+  fi
 fi
 
 # Create new sequence lists for c++ and python
