@@ -104,7 +104,7 @@ def main():
     plt.xlabel("KITTI Sequence Number")
     plt.ylabel("Average Relative Translation Error [%]")
     plt.grid(axis='y', alpha=0.4, color='k', linestyle='--')
-    plt.savefig(plotSavePath+'trans_error.png', dpi=1200)
+    plt.savefig(plotSavePath+'trans_error.png', dpi=600)
 
     fig2, ax2 = plt.subplots()
     ax2.set_title('Rotation Error of 11 Sequences')
@@ -116,7 +116,7 @@ def main():
     plt.xlabel("KITTI Sequence Number")
     plt.ylabel("Average Relative Rotation Error [deg/100m]")
     plt.grid(axis='y', alpha=0.4, color='k', linestyle='--')
-    plt.savefig(plotSavePath+'rot_error.png', dpi=1200)
+    plt.savefig(plotSavePath+'rot_error.png', dpi=600)
 
     fig3, ax3 = plt.subplots()
     ax3.set_title('Median Tracking Time of 11 Sequences')
@@ -128,7 +128,7 @@ def main():
     plt.xlabel("KITTI Sequence Number")
     plt.ylabel("Median Tracking Time [s]")
     plt.grid(axis='y', alpha=0.4, color='k', linestyle='--')
-    plt.savefig(plotSavePath+'median_track_time.png', dpi=1200)
+    plt.savefig(plotSavePath+'median_track_time.png', dpi=600)
 
     fig4, ax4 = plt.subplots()
     ax4.set_title('Mean Tracking Time of 11 Sequences')
@@ -140,7 +140,7 @@ def main():
     plt.xlabel("KITTI Sequence Number")
     plt.ylabel("Mean Tracking Time [s]")
     plt.grid(axis='y', alpha=0.4, color='k', linestyle='--')
-    plt.savefig(plotSavePath+'mean_track_time.png', dpi=1200)
+    plt.savefig(plotSavePath+'mean_track_time.png', dpi=600)
 
     print('Successfully generated plots from iteration results')
 

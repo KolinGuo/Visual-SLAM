@@ -346,6 +346,7 @@ if [ "$BMMULTITER" = true ] ; then
   if [ "$BMCPLUSPLUS" = true ] ; then
     echo -e "\nCalculating C++11 iteration results..."
     RESULTCPLUSPLUSDIR=$(realpath "$RESULTCPLUSPLUSDIR/../")
+    mkdir -p "$RESULTCPLUSPLUSDIR/plots"
     python3 "$SCRIPTPATH/tools/calc_iter_results.py" "$RESULTCPLUSPLUSDIR"
     if [ $? -ne 0 ] ; then
       echo -e "\nFailed to calculate C++11 iteration results..."
@@ -354,6 +355,7 @@ if [ "$BMMULTITER" = true ] ; then
   if [ "$BMPYTHON" = true ] ; then
     echo -e "\nCalculating Python iteration results..."
     RESULTPYTHONDIR=$(realpath "$RESULTPYTHONDIR/../")
+    mkdir -p "$RESULTPYTHONDIR/plots"
     python3 "$SCRIPTPATH/tools/calc_iter_results.py" "$RESULTPYTHONDIR"
     if [ $? -ne 0 ] ; then
       echo -e "\nFailed to calculate Python iteration results..."
