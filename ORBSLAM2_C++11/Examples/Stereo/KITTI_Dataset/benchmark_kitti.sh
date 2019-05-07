@@ -20,27 +20,32 @@ fi
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-USAGE="Usage: ./benchmark_kitti.sh [c++=[0,1]] [py=[0,1]] [KITTI Dataset Sequence Numbers]\n"
-USAGE+="\tc++=[0,1] : 0 to not benchmark C++11 implementation\n"
-USAGE+="\t            and 1 otherwise\n"
-USAGE+="\t            default is 0\n"
-USAGE+="\tpy=[0,1]  : 0 to not benchmark python implementation\n"
-USAGE+="\t            and 1 otherwise\n"
-USAGE+="\t            default is 1\n"
-USAGE+="\texample   : ./benchmark_kitti.sh 00 05 10\n"
-USAGE+="\t            only benchmark 00, 05 and 10 sequence\n"
-USAGE+="\t            default is all 11 data sequences 00-10\n"
+USAGE="Usage: ./benchmark_kitti.sh [c++=[0,1]] [py=[0,1]] [iter=[num]] [KITTI Dataset Sequence Numbers]\n"
+USAGE+="\tc++=[0,1]  : 0 to not benchmark C++11 implementation\n"
+USAGE+="\t             and 1 otherwise\n"
+USAGE+="\t             default is 0\n"
+USAGE+="\tpy=[0,1]   : 0 to not benchmark python implementation\n"
+USAGE+="\t             and 1 otherwise\n"
+USAGE+="\t             default is 1\n"
+USAGE+="\titer=[num] : number of benchmark iteration\n"
+USAGE+="\t             default is 1\n"
+USAGE+="\texample    : ./benchmark_kitti.sh 00 05 10\n"
+USAGE+="\t             only benchmark 00, 05 and 10 sequence\n"
+USAGE+="\t             default is all 11 data sequences 00-10\n"
 
 BMCPLUSPLUS=false
 BMPYTHON=true
 SEQUENCELIST=$(seq -w 00 10)
 SEQUENCELISTFULL=true
-RESULTCPLUSPLUSDIR=$(realpath "$SCRIPTPATH/resultsC++")
-RESULTPYTHONDIR=$(realpath "$SCRIPTPATH/resultsPy")
+declare -i iter
+iter=1
+RESULTCPLUSPLUSDIR=$(realpath "$SCRIPTPATH/resultC++")
+RESULTPYTHONDIR=$(realpath "$SCRIPTPATH/resultPy")
 
 # Parsing argument
 if [ $# -ne 0 ] ; then
   while [ ! -z $1 ] ; do
+    echo -e "Argument $1"
     if [[ "$1" =~ ^(0[0-9]|10)$ ]] ; then
       if [ "$SEQUENCELISTFULL" = true ] ; then
         SEQUENCELIST="$1"
@@ -52,6 +57,8 @@ if [ $# -ne 0 ] ; then
       BMCPLUSPLUS=true
     elif [ "$1" = "py=0" ] ; then
       BMPYTHON=false
+    elif [[ "$1" =~ ^iter=[0-9]+$ ]] ; then
+      iter=$(echo -ne "$1" | egrep -o "[0-9]+$")
     elif [[ "$1" != "c++=0" && "$1" != "py=1" ]] ; then
       echo -e "Unknown argument: " $1
       echo -e "$USAGE"
@@ -73,15 +80,57 @@ if [ $? -ne 0 ] ; then
 fi
 cd "$SCRIPTPATH"
 
+BMMULTITER=false
+# If multiple iteration
+if [ $iter -gt 1 ] ; then
+  BMMULTITER=true
+  RESULTCPLUSPLUSDIR=$(realpath "$SCRIPTPATH/resultsC++")
+  RESULTPYTHONDIR=$(realpath "$SCRIPTPATH/resultsPy")
+  if [[ -d "$RESULTCPLUSPLUSDIR" || -d "$RESULTPYTHONDIR" ]] ; then
+    echo -ne "\nAll contents in\n\t$RESULTCPLUSPLUSDIR\nand\n\t$RESULTPYTHONDIR\n"
+    echo -e "will be deleted."
+    echo -e "Press 'y' to continue, and 'q' to quit and save them somewhere else"
+    read option
+    if [ "$option" = y ] ; then
+      rm -rf "$RESULTCPLUSPLUSDIR" "$RESULTPYTHONDIR"
+    elif [ "$option" = q ] ; then
+      exit 0
+    else
+      echo -e "\nUnknown command... Exiting...\n"
+      exit 1
+    fi
+  fi
+  mkdir -p "$RESULTCPLUSPLUSDIR"
+  mkdir -p "$RESULTPYTHONDIR"
+fi
+
 # Create new sequence lists for c++ and python
 SEQUENCELISTCPLUSPLUS=""
 SEQUENCELISTPYTHON=""
 
+declare -i loopcount
+loopcount=0
+while [ $loopcount -lt $iter ] ; do
+if [ "$BMMULTITER" = true ] ; then
+  SEQUENCELISTCPLUSPLUS=$SEQUENCELIST
+  SEQUENCELISTPYTHON=$SEQUENCELIST
+  if [ $iter -ge 10 ] ; then
+    printfcmd="%02d"
+  elif [ $iter -ge 100 ] ; then
+    printfcmd="%03d"
+  else    # Assume no iteration larger than 999
+    printfcmd="%01d"
+  fi
+  dirseqname=$(printf $printfcmd $loopcount)
+  RESULTCPLUSPLUSDIR=$(realpath "$SCRIPTPATH/resultsC++/iter$dirseqname")
+  RESULTPYTHONDIR=$(realpath "$SCRIPTPATH/resultsPy/iter$dirseqname")
+fi
+
 # Check if any benchmark result already exists
-if [ "$BMCPLUSPLUS" = true ] ; then
+if [[ "$BMMULTITER" = false && "$BMCPLUSPLUS" = true ]] ; then
   for seq in $(echo -e $SEQUENCELIST) ; do
     if [[ -d "$RESULTCPLUSPLUSDIR/data" && -f "$RESULTCPLUSPLUSDIR/data/$seq.txt" ]] ; then
-      echo -e "\nFile \"resultsC++/data/$seq.txt\" exists"
+      echo -e "\nFile \"$RESULTCPLUSPLUSDIR/data/$seq.txt\" exists"
       echo -e "Press 'y' to overwrite it, 'n' to skip benchmark it and 'q' to quit"
       read option
       if [ "$option" = y ] ; then
@@ -99,10 +148,10 @@ if [ "$BMCPLUSPLUS" = true ] ; then
   done
 fi
 
-if [ "$BMPYTHON" = true ] ; then
+if [[ "$BMMULTITER" = false && "$BMPYTHON" = true ]] ; then
   for seq in $(echo -e $SEQUENCELIST) ; do
     if [[ -d "$RESULTPYTHONDIR/data" && -f "$RESULTPYTHONDIR/data/$seq.txt" ]] ; then
-      echo -e "\nFile \"resultsPy/data/$seq.txt\" exists"
+      echo -e "\nFile \"$RESULTPYTHONDIR/data/$seq.txt\" exists"
       echo -e "Press 'y' to overwrite it, 'n' to skip benchmark it and 'q' to quit"
       read option
       if [ "$option" = y ] ; then
@@ -124,6 +173,10 @@ fi
 echo -e "\n"
 echo -e "################################################################################\n"
 echo -e "\tKITTI Benchmark Information\n"
+if [ "$BMMULTITER" = true ] ; then
+  echo -e "\t\tCautious: this benchmark will run $iter iterations"
+  echo -e "\t\t\tThis is iteration #$(($loopcount+1))\n"
+fi
 if [ "$BMCPLUSPLUS" = true ] ; then
   echo -ne "\t\tC++11 Benchmark sequences:\n\t\t\t"
   for seq in $(echo -e $SEQUENCELISTCPLUSPLUS) ; do
@@ -187,11 +240,11 @@ if [ "$BMCPLUSPLUS" = true ] ; then
       echo -e "\nFailed to benchmark C++11 implementation... Exiting...\n"
       exit 1
     else
-      echo -e "Success! Output is logged at $RESULTCPLUSPLUSDIR/logs/$seq.log\n"
+      echo -e "Success! Output is logged at $RESULTCPLUSPLUSDIR/logs/$seq.log"
     fi
     # Move result
     if [ -f "CameraTrajectory.txt" ] ; then
-      mv -vf "CameraTrajectory.txt" "$RESULTCPLUSPLUSDIR/data/$seq.txt"
+      mv -f "CameraTrajectory.txt" "$RESULTCPLUSPLUSDIR/data/$seq.txt"
     else
       echo -e "\nNo CameraTrajectory.txt found... Exiting...\n"
       exit 1
@@ -204,7 +257,7 @@ if [ "$BMCPLUSPLUS" = true ] ; then
   if [ -f "$RESULTCPLUSPLUSDIR/times.txt" ] ; then
     rm -f "$RESULTCPLUSPLUSDIR/times.txt"
   fi
-  echo -ne " \t\tTracking time\nSeq #\tmedian\t\tmean\n" \
+  echo -ne " \t\tTracking Time\nSeq #\tmedian\t\tmean\n" \
     > "$RESULTCPLUSPLUSDIR/times.txt"
   for seqlog in $(ls -al "$RESULTCPLUSPLUSDIR/logs" | egrep -oh "(0[0-9]|10).log$") ; do
     echo -ne "$seqlog" | egrep -oh "^(0[0-9]|10)" | tr -d '\n'\
@@ -266,6 +319,28 @@ if [ "$BMPYTHON" = true ] ; then
     exit 1
   fi
   cd "$SCRIPTPATH"
+fi
+loopcount+=1  # Finish this iteration
+done
+
+# Calculate iteration results
+if [ "$BMMULTITER" = true ] ; then
+  if [ "$BMCPLUSPLUS" = true ] ; then
+    echo -e "\nCalculating C++11 iteration results..."
+    RESULTCPLUSPLUSDIR=$(realpath "$RESULTCPLUSPLUSDIR/../")
+    python3 "$SCRIPTPATH/tools/calc_iter_results.py" "$RESULTCPLUSPLUSDIR"
+    if [ $? -ne 0 ] ; then
+      echo -e "\nFailed to calculate C++11 iteration results..."
+    fi
+  fi
+  if [ "$BMPYTHON" = true ] ; then
+    echo -e "\nCalculating Python iteration results..."
+    RESULTPYTHONDIR=$(realpath "$RESULTPYTHONDIR/../")
+    python3 "$SCRIPTPATH/tools/calc_iter_results.py" "$RESULTPYTHONDIR"
+    if [ $? -ne 0 ] ; then
+      echo -e "\nFailed to calculate Python iteration results..."
+    fi
+  fi
 fi
 
 # Print benchmark result

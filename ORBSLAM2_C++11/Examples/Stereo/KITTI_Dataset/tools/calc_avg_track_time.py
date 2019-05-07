@@ -12,7 +12,7 @@ def main():
 
     file = open(sys.argv[1], 'a')
     file.write('----------------------------------------\n')
-    file.write('avg\t%.7f\t%.7f\n' % (np.mean(median), np.mean(mean)))
+    file.write('avg\t%.7f\t%.7f\n' % (np.median(median), np.mean(mean)))
     file.close()
     print('Successfully calculated average tracking time')
 

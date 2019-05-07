@@ -553,6 +553,7 @@ int32_t main (int32_t argc,char *argv[])
 
   // create stats output file
   FILE *fp = fopen((result_dir + "/stats.txt").c_str(), "w");
+  fprintf(fp, " \t\tAverage Relative Error\n");
   fprintf(fp, "Seq #\tt_rel (%)\tr_rel (deg/100m)\n");
   fclose(fp);
   
