@@ -152,12 +152,13 @@ sleep 5
 
 BMCPLUSPLUSLOC=$(realpath "$SCRIPTPATH/../")
 BMCPLUSPLUSCMD00_02="./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTI00-02.yaml ./KITTI_Dataset/dataset/sequences/"
-BMCPLUSPLUSCMD03="./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTI03.yaml ./KITTI_Dataset/dataset/sequences/03"
+BMCPLUSPLUSCMD03="./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTI03.yaml ./KITTI_Dataset/dataset/sequences/"
 BMCPLUSPLUSCMD04_12="./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTI04-12.yaml ./KITTI_Dataset/dataset/sequences/"
 if [ "$BMCPLUSPLUS" = true ] ; then
   # Make directory for C++11 benchmark results
   echo -e "\nMaking new directory to hold C++11 benchmark results..."
   mkdir -p "$RESULTCPLUSPLUSDIR/data"
+  mkdir -p "$RESULTCPLUSPLUSDIR/logs"
   mkdir -p "$RESULTCPLUSPLUSDIR/errors"
   mkdir -p "$RESULTCPLUSPLUSDIR/plot_path"
   mkdir -p "$RESULTCPLUSPLUSDIR/plot_error"
@@ -167,12 +168,16 @@ if [ "$BMCPLUSPLUS" = true ] ; then
   cd "$BMCPLUSPLUSLOC"
   for seq in $(echo -e $SEQUENCELISTCPLUSPLUS) ; do
     # Run implementation
+    echo -e "\nBenchmarking sequence $seq..."
     if [[ "$seq" =~ ^0[0-2]$ ]] ; then
-      $BMCPLUSPLUSCMD00_02$seq
+      date > "$RESULTCPLUSPLUSDIR/logs/$seq.log"  # Add timestamp
+      $BMCPLUSPLUSCMD00_02$seq >> "$RESULTCPLUSPLUSDIR/logs/$seq.log"
     elif [[ "$seq" =~ ^03$ ]] ; then
-      $BMCPLUSPLUSCMD03
+      date > "$RESULTCPLUSPLUSDIR/logs/$seq.log"  # Add timestamp
+      $BMCPLUSPLUSCMD03$seq >> "$RESULTCPLUSPLUSDIR/logs/$seq.log"
     elif [[ "$seq" =~ ^(0[4-9]|10)$ ]] ; then
-      $BMCPLUSPLUSCMD04_12$seq
+      date > "$RESULTCPLUSPLUSDIR/logs/$seq.log"  # Add timestamp
+      $BMCPLUSPLUSCMD04_12$seq >> "$RESULTCPLUSPLUSDIR/logs/$seq.log"
     else
       echo -e "\nWrong sequence number $seq\n"
       exit 1
@@ -181,6 +186,8 @@ if [ "$BMCPLUSPLUS" = true ] ; then
     if [ $? -ne 0 ] ; then
       echo -e "\nFailed to benchmark C++11 implementation... Exiting...\n"
       exit 1
+    else
+      echo -e "Success! Output is logged at $RESULTCPLUSPLUSDIR/logs/$seq.log\n"
     fi
     # Move result
     if [ -f "CameraTrajectory.txt" ] ; then
@@ -191,6 +198,41 @@ if [ "$BMCPLUSPLUS" = true ] ; then
     fi
   done
   cd "$SCRIPTPATH"
+
+  # Extract tracking time from log
+  echo -e "\nExtracting tracking times from logs..."
+  if [ -f "$RESULTCPLUSPLUSDIR/times.txt" ] ; then
+    rm -f "$RESULTCPLUSPLUSDIR/times.txt"
+  fi
+  echo -ne " \t\tTracking time\nSeq #\tmedian\t\tmean\n" \
+    > "$RESULTCPLUSPLUSDIR/times.txt"
+  for seqlog in $(ls -al "$RESULTCPLUSPLUSDIR/logs" | egrep -oh "(0[0-9]|10).log$") ; do
+    echo -ne "$seqlog" | egrep -oh "^(0[0-9]|10)" | tr -d '\n'\
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+
+    echo -ne "\t" \
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+
+    egrep -h "^median tracking time" "$RESULTCPLUSPLUSDIR/logs/$seqlog" | \
+      egrep -oh "[0-9].[0-9]+$" | tr -d '\n' \
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+
+    echo -ne "\t" \
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+
+    egrep -h "^mean tracking time" "$RESULTCPLUSPLUSDIR/logs/$seqlog" | \
+      egrep -oh "[0-9].[0-9]+$" | tr -d '\n' \
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+
+    echo -ne "\n" \
+      >> "$RESULTCPLUSPLUSDIR/times.txt"
+  done
+
+  # Calculate average tracking time
+  python3 "$SCRIPTPATH/tools/calc_avg_track_time.py" "$RESULTCPLUSPLUSDIR/times.txt"
+  if [ $? -ne 0 ] ; then
+    echo -e "\nFailed to calculate average tracking time..."
+  fi
 
   # Evaluate Results
   echo -e "\nEvaluating C++11 results..."
@@ -207,6 +249,7 @@ if [ "$BMPYTHON" = true ] ; then
   # Make directory for python benchmark results
   echo -e "\nMaking new directory to hold python benchmark results..."
   mkdir -p "$RESULTPYTHONDIR/data"
+  mkdir -p "$RESULTPYTHONDIR/logs"
   mkdir -p "$RESULTPYTHONDIR/errors"
   mkdir -p "$RESULTPYTHONDIR/plot_path"
   mkdir -p "$RESULTPYTHONDIR/plot_error"
@@ -230,14 +273,14 @@ echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tKITTI Benchmark Result\n"
 if [ "$BMCPLUSPLUS" = true ] ; then
-  echo -ne "\t\tC++11 Benchmark Result:\n"
+  echo -ne "\t\tC++11 Benchmark Result:\n\n"
   cat "$RESULTCPLUSPLUSDIR/times.txt"
   echo ""
   cat "$RESULTCPLUSPLUSDIR/stats.txt"
   echo -e "\n"
 fi
 if [ "$BMPYTHON" = true ] ; then
-  echo -ne "\t\tPython Benchmark Result:\n"
+  echo -ne "\t\tPython Benchmark Result:\n\n"
   cat "$RESULTPYTHONDIR/times.txt"
   echo ""
   cat "$RESULTPYTHONDIR/stats.txt"
