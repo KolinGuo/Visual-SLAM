@@ -1,0 +1,56 @@
+Wed May  8 07:47:26 UTC 2019
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Stereo
+
+Loading ORB Vocabulary. This could take a while...
+Vocabulary loaded!
+
+
+Camera Parameters: 
+- fx: 707.091
+- fy: 707.091
+- cx: 601.887
+- cy: 183.11
+- k1: 0
+- k2: 0
+- p1: 0
+- p2: 0
+- fps: 10
+- color order: RGB (ignored if grayscale)
+
+ORB Extractor Parameters: 
+- Number of Features: 2000
+- Scale Levels: 8
+- Scale Factor: 1.2
+- Initial Fast Threshold: 12
+- Minimum Fast Threshold: 7
+
+Depth Threshold (Close/Far Points): 21.486
+
+-------
+Start processing sequence ...
+Images in the sequence: 1101
+
+New map created with 950 points
+Loop detected!
+Local Mapping STOP
+Local Mapping RELEASE
+Starting Global Bundle Adjustment
+Global Bundle Adjustment finished
+Updating map ...
+Local Mapping STOP
+Local Mapping RELEASE
+Map updated!
+-------
+
+median tracking time: 0.0550612
+mean tracking time: 0.0561016
+
+Saving camera trajectory to CameraTrajectory.txt ...
+
+trajectory saved!
