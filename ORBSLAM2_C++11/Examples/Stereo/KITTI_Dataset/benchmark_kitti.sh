@@ -316,6 +316,12 @@ if [ "$BMCPLUSPLUS" = true ] ; then
   cd "$SCRIPTPATH"
 fi
 
+BMPYTHONLOC=$(realpath "$SCRIPTPATH/../../../../examples/")
+BMPYTHONVOCLOC=$(realpath "$SCRIPTPATH/../../../Vocabulary/ORBvoc.txt")
+BMPYTHONDATALOC=$(realpath "$SCRIPTPATH/../")
+BMPYTHONCMD00_02="orbslam_stereo_kitti.py $BMPYTHONVOCLOC $BMPYTHONDATALOC/KITTI00-02.yaml $BMPYTHONDATALOC/KITTI_Dataset/dataset/sequences/"
+BMPYTHONCMD03="orbslam_stereo_kitti.py $BMPYTHONVOCLOC $BMPYTHONDATALOC/KITTI03.yaml $BMPYTHONDATALOC/KITTI_Dataset/dataset/sequences/"
+BMPYTHONCMD04_12="orbslam_stereo_kitti.py $BMPYTHONVOCLOC $BMPYTHONDATALOC/KITTI04-12.yaml $BMPYTHONDATALOC/KITTI_Dataset/dataset/sequences/"
 if [ "$BMPYTHON" = true ] ; then
   # Make directory for python benchmark results
   echo -e "\nMaking new directory to hold python benchmark results..."
@@ -327,6 +333,76 @@ if [ "$BMPYTHON" = true ] ; then
 
   # Call Python implementation
   echo -e "\nCalling Python implementation..."
+  cd "$BMPYTHONLOC"
+  for seq in $(echo -e $SEQUENCELISTPYTHON) ; do
+    # Run implementation
+    echo -e "\nBenchmarking sequence $seq..."
+    if [[ "$seq" =~ ^0[0-2]$ ]] ; then
+      date > "$RESULTPYTHONDIR/logs/$seq.log"  # Add timestamp
+      python3 $BMPYTHONCMD00_02$seq >> "$RESULTPYTHONDIR/logs/$seq.log"
+    elif [[ "$seq" =~ ^03$ ]] ; then
+      date > "$RESULTPYTHONDIR/logs/$seq.log"  # Add timestamp
+      python3 $BMPYTHONCMD03$seq >> "$RESULTPYTHONDIR/logs/$seq.log"
+    elif [[ "$seq" =~ ^(0[4-9]|10)$ ]] ; then
+      date > "$RESULTPYTHONDIR/logs/$seq.log"  # Add timestamp
+      python3 $BMPYTHONCMD04_12$seq >> "$RESULTPYTHONDIR/logs/$seq.log"
+    else
+      echo -e "\nWrong sequence number $seq\n"
+      exit 1
+    fi
+    # Check return status
+    if [ $? -ne 0 ] ; then
+      echo -e "\nFailed to benchmark Python implementation... Exiting...\n"
+      exit 1
+    else
+      echo -e "Success! Output is logged at $RESULTPYTHONDIR/logs/$seq.log"
+    fi
+    # Move result
+    if [ -f "trajectory.txt" ] ; then
+      mv -f "trajectory.txt" "$RESULTPYTHONDIR/data/$seq.txt"
+    else
+      echo -e "\nNo trajectory.txt found... Exiting...\n"
+      exit 1
+    fi
+  done
+  cd "$SCRIPTPATH"
+
+  # Extract tracking time from log
+  echo -e "\nExtracting tracking times from logs..."
+  if [ -f "$RESULTPYTHONDIR/times.txt" ] ; then
+    rm -f "$RESULTPYTHONDIR/times.txt"
+  fi
+  echo -ne " \t\tTracking Time\nSeq #\tmedian\t\tmean\n" \
+    > "$RESULTPYTHONDIR/times.txt"
+  for seqlog in $(ls -al "$RESULTPYTHONDIR/logs" | egrep -oh "(0[0-9]|10).log$") ; do
+    echo -ne "$seqlog" | egrep -oh "^(0[0-9]|10)" | tr -d '\n'\
+      >> "$RESULTPYTHONDIR/times.txt"
+
+    echo -ne "\t" \
+      >> "$RESULTPYTHONDIR/times.txt"
+
+    tmpnum=$(egrep -h "^median tracking time" "$RESULTPYTHONDIR/logs/$seqlog" | \
+      egrep -oh "[0-9].[0-9]+$" | tr -d '\n')
+    python3 -c "print('%.7f' % $tmpnum)" | tr -d '\n' \
+      >> "$RESULTPYTHONDIR/times.txt"
+
+    echo -ne "\t" \
+      >> "$RESULTPYTHONDIR/times.txt"
+
+    tmpnum=$(egrep -h "^mean tracking time" "$RESULTPYTHONDIR/logs/$seqlog" | \
+      egrep -oh "[0-9].[0-9]+$" | tr -d '\n')
+    python3 -c "print('%.7f' % $tmpnum)" | tr -d '\n' \
+      >> "$RESULTPYTHONDIR/times.txt"
+
+    echo -ne "\n" \
+      >> "$RESULTPYTHONDIR/times.txt"
+  done
+
+  # Calculate average tracking time
+  python3 "$SCRIPTPATH/tools/calc_avg_track_time.py" "$RESULTPYTHONDIR/times.txt"
+  if [ $? -ne 0 ] ; then
+    echo -e "\nFailed to calculate average tracking time..."
+  fi
 
   # Evaluate Results
   echo -e "\nEvaluating Python results..."
