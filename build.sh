@@ -125,6 +125,12 @@ if [ "$BUILDCPLUSPLUS" = true ] ; then
                 echo -e "\nFailed to build C++11 Implementation... Exiting...\n"
                 exit 1
         fi
+        cd "$SCRIPTPATH/ORBSLAM2_C++11/build"
+        make install
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to make install C++11 Implementation... Exiting...\n"
+                exit 1
+        fi
 fi
 
 if [ "$BUILDPYTHON" = true ] ; then
@@ -137,14 +143,7 @@ if [ "$BUILDPYTHON" = true ] ; then
         echo -e "\nBuilding Python Implementation..."
         mkdir build
         cd build
-        cmake -DBUILD_PYTHON3=ON \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DZMQ_INCLUDE_DIR=/usr/local/include \
-                -DZMQ_LIBRARY=/usr/local/lib/libzmq.so \
-                -DORBSLAM2_LIBRARY="$SCRIPTPATH"/ORBSLAM2_C++11/lib/libORB_SLAM2.so \
-                -DBG2O_LIBRARY="$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/g2o/lib/libg2o.so \
-                -DDBoW2_LIBRARY="$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/DBoW2/lib/libDBoW2.so \
-                ..
+        cmake ..
 
         if [ $? -ne 0 ] ; then
                 echo -e "\nFailed to cmake Python Implementation... Exiting...\n"
@@ -165,12 +164,16 @@ if [ "$BUILDPYTHON" = true ] ; then
                 echo -e "\nFailed to make Python Implementation... Exiting...\n"
                 exit 1
         fi
+
+        make install
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to make install Python Implementation... Exiting...\n"
+                exit 1
+        fi
 fi
 
 # If it's the first time build, include into PYTHONPATH
 if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
-        echo "export PYTHONPATH=$SCRIPTPATH/build:$PYTHONPATH" \
-                >> ~/.bashrc
         echo "export ORBSLAM2PYFIRSTBUILD=false" \
                 >> ~/.bashrc
         source ~/.bashrc
@@ -182,7 +185,10 @@ COMMANDTORUNCPLUSPLUS+="\t\t./download_kitti_dataset.sh\n"
 COMMANDTORUNCPLUSPLUS+="\t\tcd ..\n"
 COMMANDTORUNCPLUSPLUS+="\t\t./stereo_kitti ../../Vocabulary/ORBvoc.txt ./KITTIX.yaml \\ \n"
 COMMANDTORUNCPLUSPLUS+="\t\t\t./KITTI_Dataset/dataset/sequences/SEQUENCE_NUMBER\n"
-COMMANDTORUNPYTHON="\t\tpython3 test/test.py\n"
+COMMANDTORUNPYTHON="\t\tpython3 examples/orbslam_stereo_kitti.py \\ \n"
+COMMANDTORUNPYTHON+="\t\t\tORBSLAM2_C++11/Vocabulary/ORBvoc.txt \\ \n"
+COMMANDTORUNPYTHON+="\t\t\tORBSLAM2_C++11/Examples/Stereo/KITTIX.yaml \\ \n"
+COMMANDTORUNPYTHON+="\t\t\tORBSLAM2_C++11/Examples/Stereo/KITTI_Dataset/dataset/sequences/SEQUENCE_NUMBER\n"
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommmand to run ORBSLAM2 C++11 Implementation:\n"\
