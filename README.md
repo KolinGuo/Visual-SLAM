@@ -11,15 +11,13 @@ EEC 193AB Independent Senior Design Project 2018-2019 @ UC-Davis
   * Adam Jones
   * Minh Truong
   
-## Instructions on Setting up This Repository
+## Instructions on Setting up This Repository for Nvidia Jetson TX2
 ### Prerequisites
 The list of prerequisites for building and running this repository is described below. 
-* GNU/Linux x86_64 with kernel version > 3.10
+* Ubuntu ARMv8 >= 16.04
 * Docker >= 1.12
-* NVIDIA GPU with Architecture > Fermi (2.1)
-* NVIDIA drivers >= 418.39  
-(Required for CUDA 10.1.105, can change Dockerfile base image to downgrade CUDA version if NVIDIA driver doesn't satisfy. Driver version required for different CUDA versions can be found in [Table 1](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html). Other base images can be found [here](https://hub.docker.com/r/nvidia/cudagl))
-* [nvidia-docker2](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0))
+* CUDA Driver > 9.0
+* [Tegra-Docker (tx2-docker)](https://github.com/Technica-Corporation/Tegra-Docker)
 
 ### Setup Instructions
 The setup process is separated into two shell scripts: `setup.sh` and `build.sh`. Both have some command-line arguments that you can specify to config them. See the printed out usage for details.   
