@@ -21,6 +21,33 @@ BUILDPYTHON=true
 if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
         BUILDCPLUSPLUS=true
         BUILDPYTHON=true
+
+        # Build the rest of Dockerfile
+        ######################################
+        # SECTION 2: CV packages             #
+        ######################################
+        
+        echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}" \
+                >> ~/.bashrc
+        source ~/.bashrc
+        ### -------------------------------------------------------------------
+        ### install OpenCV 3 with python3 bindings and CUDA 8
+        ### -------------------------------------------------------------------
+        apt update && apt -y upgrade
+        chmod +x /slamdoom/install/opencv3/install.sh && /slamdoom/install/opencv3/install.sh /slamdoom/libs python3
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to install OpenCV... Exiting...\n"
+                exit 1
+        fi
+        
+        #### -------------------------------------------------------------------
+        #### Install ORBSLAM2
+        #### -------------------------------------------------------------------
+        chmod +x /slamdoom/install/orbslam2/install.sh && /slamdoom/install/orbslam2/install.sh
+        if [ $? -ne 0 ] ; then
+                echo -e "\nFailed to install ORBSLAM2... Exiting...\n"
+                exit 1
+        fi
 # If there are arguments, parse all arguments
 elif [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do

@@ -1,5 +1,5 @@
 #!/bin/bash 
-# Ensure that you have installed nvidia-docker and the latest nvidia graphics driver on host!
+# Ensure that you have installed tx2-docker and the latest nvidia graphics driver on host!
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
@@ -55,12 +55,12 @@ sleep 5
 # Remove previously built Docker image
 if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
         echo -e "\nRemoving previously built image..."
-        nvidia-docker rmi -f orbslam2py
+        tx2-docker rmi -f orbslam2py
 fi
 
 # Build and run the image
 echo -e "\nBuilding image..."
-nvidia-docker build $REMOVEIMDDOCKERCONTAINERCMD -t orbslam2py .
+tx2-docker build $REMOVEIMDDOCKERCONTAINERCMD -t orbslam2py .
 
 if [ $? -ne 0 ] ; then
         echo -e "\nFailed to build Docker image... Exiting...\n"
@@ -70,11 +70,11 @@ fi
 # Build a container from the image
 echo -e "\nRemoving older container..."
 if [ 1 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
-	nvidia-docker rm -f orbslam2py
+	tx2-docker rm -f orbslam2py
 fi
 
 echo -e "\nBuilding a container from the image..."
-nvidia-docker create -it --name=orbslam2py \
+tx2-docker create -it --name=orbslam2py \
 	-v "$SCRIPTPATH":/root/Visual-SLAM \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
         -e DISPLAY=$DISPLAY \
@@ -94,7 +94,7 @@ echo -e "\tCommand to continue building ORBSLAM2 for the first time:\n\t\t${COMM
 echo -e "\tCommand to build ORBSLAM2 after the first time:\n\t\t${COMMANDTOBUILD}\n"
 echo -e "################################################################################\n"
 
-nvidia-docker start -ai orbslam2py
+tx2-docker start -ai orbslam2py
 
 if [ 0 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
         echo -e "\nFailed to start/attach Docker container... Exiting...\n"
@@ -102,7 +102,7 @@ if [ 0 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
 fi
 
 # Echo command to start container
-COMMANDTOSTARTCONTAINER="nvidia-docker start -ai orbslam2py"
+COMMANDTOSTARTCONTAINER="tx2-docker start -ai orbslam2py"
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommand to start Docker container:\n\t\t${COMMANDTOSTARTCONTAINER}\n"

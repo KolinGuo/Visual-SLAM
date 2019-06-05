@@ -1,14 +1,19 @@
 # FROM defines the base image
 # FROM ubuntu16.04
 # FROM ubuntu:latest
-FROM nvidia/cudagl:10.1-devel-ubuntu16.04
+# FROM nvidia/cudagl:10.1-devel-ubuntu16.04
+FROM arm64v8/ubuntu:16.04
 
 ######################################
 # SECTION 1: Essentials              #
 ######################################
 
 #Update apt-get and upgrade
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils # Fix 
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+RUN apt-get -y upgrade
+
+#Install BLAS and LAPACK
+RUN apt-get update && apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
 RUN apt-get -y upgrade
 
 #Install python3 pip3
@@ -21,7 +26,6 @@ RUN pip3 install numpy scipy
 RUN apt-get -y install python2.7 wget
 RUN wget https://bootstrap.pypa.io/get-pip.py && python2.7 get-pip.py
 RUN pip install pip --upgrade
-RUN pip install numpy scipy
 
 # set up directories
 RUN mkdir /slamdoom
@@ -38,13 +42,13 @@ RUN apt-get update -y
 ### install OpenCV 3 with python3 bindings and CUDA 8
 ### -------------------------------------------------------------------
 ADD ./install/opencv3 /slamdoom/install/opencv3
-RUN chmod +x /slamdoom/install/opencv3/install.sh && /slamdoom/install/opencv3/install.sh /slamdoom/libs python3
+#RUN chmod +x /slamdoom/install/opencv3/install.sh && /slamdoom/install/opencv3/install.sh /slamdoom/libs python3
 
 #### -------------------------------------------------------------------
 #### Install ORBSLAM2
 #### -------------------------------------------------------------------
 ADD ./install/orbslam2 /slamdoom/install/orbslam2
-RUN chmod +x /slamdoom/install/orbslam2/install.sh && /slamdoom/install/orbslam2/install.sh
+#RUN chmod +x /slamdoom/install/orbslam2/install.sh && /slamdoom/install/orbslam2/install.sh
 
 ############################################
 ## SECTION: Additional libraries and tools #
@@ -56,15 +60,14 @@ RUN apt-get install -y vim
 ## SECTION: Final instructions and configs #
 ############################################
 
-RUN apt-get install -y libcanberra-gtk-module
-RUN pip install matplotlib
+RUN apt-get install -y libcanberra-gtk-module pkg-config libfreetype6-dev libpng-dev
+RUN pip3 install matplotlib
 
 # set up matplotlibrc file so have Qt5Agg backend by default
 RUN mkdir /root/.matplotlib && touch /root/.matplotlib/matplotlibrc && echo "backend: Qt5Agg" >> /root/.matplotlib/matplotlibrc
 RUN apt-get install -y gdb
 
 RUN apt-get install -y libboost-all-dev
-RUN pip install numpy --upgrade
 RUN pip3 install numpy --upgrade
 
 # Fix some linux issue
@@ -82,11 +85,15 @@ RUN add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu precise universe
     add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse"
 
 RUN apt-get update && apt-get install -y \
-        libgtk2.0-dev \
-        libjpeg-dev \
+        libavcodec-dev libavformat-dev libavutil-dev libeigen3-dev libglew-dev \
+        libgtk2.0-dev libgtk-3-dev libjasper-dev libjpeg-dev libpng12-dev \
+        libpostproc-dev libswscale-dev libtbb-dev libtiff5-dev libv4l-dev \
+        libxvidcore-dev libx264-dev qt5-default zlib1g-dev \
+        libgtk2.0-dev libgtkglext1-dev \
+        libjpeg-dev libavresample-dev libv4l-dev \
         libjasper-dev \
         libopenexr-dev cmake \
-	python-tk libtbb-dev \
+        python-tk libtbb-dev \
         libeigen2-dev yasm libfaac-dev \
         libopencore-amrnb-dev libopencore-amrwb-dev \
         libtheora-dev libvorbis-dev libxvidcore-dev \
