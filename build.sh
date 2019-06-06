@@ -48,6 +48,14 @@ if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
                 echo -e "\nFailed to install ORBSLAM2... Exiting...\n"
                 exit 1
         fi
+
+        ######################################
+        #     Update shared library path     #
+        ######################################
+        echo "/usr/lib/aarch64-linux-gnu/tegra" \
+                >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+        ldconfig
+        
 # If there are arguments, parse all arguments
 elif [ $# -ne 0 ] ; then
         while [ ! -z $1 ] ; do
