@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 
+add-apt-repository universe
+add-apt-repository multiverse
+apt-get update
 apt-get install -y git cmake
 
 if [ ! -d "$DIRECTORY" ]; then
     mkdir -p $1
-    apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libhdf5-serial-dev libjpeg-dev libpng12-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
+    apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev \
+      pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev \
+      libhdf5-serial-dev libjpeg-dev libpng12-dev libjasper-dev libavcodec-dev \
+      libavformat-dev libswscale-dev \
+      gstreamer1.0-tools gstreamer1.0-alsa gstreamer1.0-plugins-base \
+      gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+      gstreamer1.0-plugins-ugly gstreamer1.0-libav libgstreamer1.0-dev \
+      libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
+      libgstreamer-plugins-bad1.0-dev \
+      libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev \
+      libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 \
+      v4l-utils unzip ffmpeg
     cd $1
     git clone https://github.com/opencv/opencv.git opencv3
     git clone https://github.com/opencv/opencv_contrib.git opencv3_contrib
@@ -29,15 +43,15 @@ if [ "$2" = "python3" ]; then
           -DCUDA_FAST_MATH=ON \
           -DWITH_NVCUVID=ON \
           -DWITH_OPENGL=ON \
-          -DENABLE_AVX=ON \
           -DENABLE_FAST_MATH=ON \
           -DBUILD_TIFF=ON \
           -DWITH_CSTRIPES=ON \
           -DWITH_EIGEN=OFF \
           -DWITH_IPP=ON \
           -DWITH_TBB=ON \
+          -DWITH_GSTREAMER=ON \
+          -DWITH_FFMPEG=ON \
           -DWITH_OPENMP=ON \
-          -DENABLE_SSE42=ON \
           -DWITH_LIBV4L=ON \
           -DWITH_VTK=OFF \
           -DBUILD_opencv_java=OFF \
@@ -71,7 +85,6 @@ else
           -DWITH_NVCUVID=ON \
           -DWITH_OPENGL=OFF \
           -DWITH_OPENCL=OFF \
-          -DENABLE_AVX=ON \
           -DENABLE_FAST_MATH=ON \
           -DBUILD_TIFF=ON \
           -DWITH_CSTRIPES=ON \
@@ -79,7 +92,8 @@ else
           -DWITH_IPP=ON \
           -DWITH_TBB=ON \
           -DWITH_OPENMP=ON \
-          -DENABLE_SSE42=ON \
+          -DWITH_GSTREAMER=ON \
+          -DWITH_FFMPEG=ON \
           -DWITH_V4L=ON \
           -DWITH_VTK=OFF \
           -DBUILD_opencv_java=OFF \
