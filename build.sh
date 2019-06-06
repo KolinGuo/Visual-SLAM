@@ -55,6 +55,7 @@ if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
         echo "/usr/lib/aarch64-linux-gnu/tegra" \
                 >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
         ldconfig
+        ln -sf /usr/lib/aarch64-linux-gnu/libdrm.so /usr/lib/aarch64-linux-gnu/libdrm.so.2
         
 # If there are arguments, parse all arguments
 elif [ $# -ne 0 ] ; then

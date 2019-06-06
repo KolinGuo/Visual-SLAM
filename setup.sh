@@ -3,6 +3,7 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+nvpmodel -m0
 ~/jetson_clocks.sh    # Enable Jetson TX2 turbo mode: max freq for CPU, GPU, EMC
 USAGE="Usage: ./setup.sh [rmimcont=[0,1]] [rmimg=[0,1]]\n"
 USAGE+="\trmimcont=[0,1] : 0 to not remove intermediate Docker containers\n"
@@ -80,6 +81,7 @@ echo -e "\nBuilding a container from the image..."
 tx2-docker create -it --name=$CONTNAME \
 	      -v "$SCRIPTPATH":/root/Visual-SLAM \
 	      -v /tmp/.X11-unix:/tmp/.X11-unix \
+        -v /media/nvidia/Samsung_T5:/media/nvidia/Samsung_T5 \
         -e DISPLAY=$DISPLAY \
         --cpus="6" \
 	      $IMGNAME /bin/bash
