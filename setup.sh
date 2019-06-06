@@ -3,6 +3,7 @@
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+~/jetson_clocks.sh    # Enable Jetson TX2 turbo mode: max freq for CPU, GPU, EMC
 USAGE="Usage: ./setup.sh [rmimcont=[0,1]] [rmimg=[0,1]]\n"
 USAGE+="\trmimcont=[0,1] : 0 to not remove intermediate Docker containers\n"
 USAGE+="\t                 after a successful build and 1 otherwise\n"
@@ -10,6 +11,8 @@ USAGE+="\t                 default is 1\n"
 USAGE+="\trmimg=[0,1]    : 0 to not remove previously built Docker image\n"
 USAGE+="\t                 and 1 otherwise\n"
 USAGE+="\t                 default is 0\n"
+IMGNAME="orbslam2py"
+CONTNAME="orbslam2py"
 
 REMOVEIMDDOCKERCONTAINERCMD="--rm=true"
 REMOVEPREVDOCKERIMAGE=false
@@ -55,12 +58,12 @@ sleep 5
 # Remove previously built Docker image
 if [ "$REMOVEPREVDOCKERIMAGE" = true ] ; then
         echo -e "\nRemoving previously built image..."
-        tx2-docker rmi -f orbslam2py
+        tx2-docker rmi -f $IMGNAME
 fi
 
 # Build and run the image
 echo -e "\nBuilding image..."
-tx2-docker build $REMOVEIMDDOCKERCONTAINERCMD -t orbslam2py .
+tx2-docker build $REMOVEIMDDOCKERCONTAINERCMD -t $IMGNAME .
 
 if [ $? -ne 0 ] ; then
         echo -e "\nFailed to build Docker image... Exiting...\n"
@@ -69,16 +72,17 @@ fi
 
 # Build a container from the image
 echo -e "\nRemoving older container..."
-if [ 1 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
-	tx2-docker rm -f orbslam2py
+if [ 1 -eq $(docker container ls -a | grep "$CONTNAME$" | wc -l) ] ; then
+	tx2-docker rm -f $CONTNAME
 fi
 
 echo -e "\nBuilding a container from the image..."
-tx2-docker create -it --name=orbslam2py \
-	-v "$SCRIPTPATH":/root/Visual-SLAM \
-	-v /tmp/.X11-unix:/tmp/.X11-unix \
+tx2-docker create -it --name=$CONTNAME \
+	      -v "$SCRIPTPATH":/root/Visual-SLAM \
+	      -v /tmp/.X11-unix:/tmp/.X11-unix \
         -e DISPLAY=$DISPLAY \
-	orbslam2py /bin/bash
+        --cpus="6" \
+	      $IMGNAME /bin/bash
 
 if [ $? -ne 0 ] ; then
         echo -e "\nFailed to create Docker container... Exiting...\n"
@@ -94,15 +98,15 @@ echo -e "\tCommand to continue building ORBSLAM2 for the first time:\n\t\t${COMM
 echo -e "\tCommand to build ORBSLAM2 after the first time:\n\t\t${COMMANDTOBUILD}\n"
 echo -e "################################################################################\n"
 
-tx2-docker start -ai orbslam2py
+tx2-docker start -ai $CONTNAME
 
-if [ 0 -eq $(docker container ls -a | grep "orbslam2py$" | wc -l) ] ; then
+if [ 0 -eq $(docker container ls -a | grep "$CONTNAME$" | wc -l) ] ; then
         echo -e "\nFailed to start/attach Docker container... Exiting...\n"
         exit 1
 fi
 
 # Echo command to start container
-COMMANDTOSTARTCONTAINER="tx2-docker start -ai orbslam2py"
+COMMANDTOSTARTCONTAINER="tx2-docker start -ai $CONTNAME"
 echo -e "\n\n"
 echo -e "################################################################################\n"
 echo -e "\tCommand to start Docker container:\n\t\t${COMMANDTOSTARTCONTAINER}\n"
