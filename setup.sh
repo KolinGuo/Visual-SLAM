@@ -82,6 +82,9 @@ tx2-docker create -it --name=$CONTNAME \
 	      -v "$SCRIPTPATH":/root/Visual-SLAM \
 	      -v /tmp/.X11-unix:/tmp/.X11-unix \
         -v /media/nvidia/Samsung_T5:/media/nvidia/Samsung_T5 \
+        --device=/dev/video0 \
+        --device=/dev/video1 \
+        --device=/dev/video2 \
         -e DISPLAY=$DISPLAY \
         --cpus="6" \
 	      $IMGNAME /bin/bash
