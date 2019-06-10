@@ -20,7 +20,12 @@ def capture_checkerboard():
     delaySec = 5
     width = 1920
     height = 1080
-    cap = cv2.VideoCapture("nvcamerasrc sensor-id=%d ! video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink" % (sensor_id, width, height))
+    cap = cv2.VideoCapture("nvcamerasrc sensor-id=%d ! video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink" % (sensor_id, width, height), cv2.CAP_GSTREAMER)
+    #cap = cv2.VideoCapture("nvcamerasrc sensor-id=%d ! video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! videoconvert ! appsink" % (sensor_id, width, height), cv2.CAP_GSTREAMER)
+    #cap = cv2.VideoCapture("v4l2src device=/dev/video{} ! video/x-raw, width=(int){}, height=(int){} ! videoconvert ! appsink".format(sensor_id, width, height), cv2.CAP_GSTREAMER)
+    #cap = cv2.VideoCapture(0, cv2.CAP_GSTREAMER)
+    #cap = cv2.VideoCapture("nvcamerasrc sensor-id=%d ! video/x-raw, format=(string)I420, width=(int)%d, height=(int)%d, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, framerate=(fraction)30/1! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink" % (sensor_id, width, height), cv2.CAP_GSTREAMER)
+
     if cap.isOpened():
         print("Camera %d open succeeded" % sensor_id)
         for i in range(numPics):
@@ -35,7 +40,7 @@ def capture_checkerboard():
             plt.imshow(frame)
             plt.show()
             cv2.waitKey(0)
-            img_name = "capture%d.png" % (i)
+            img_name = "frame%d.png" % (i)
             cv2.imwrite(os.path.join(save_path, img_name), frame)
 
         print("Successfully capture %d images at %s" % (numPics, save_path))
