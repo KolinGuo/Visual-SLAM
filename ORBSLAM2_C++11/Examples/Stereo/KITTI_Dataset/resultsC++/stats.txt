@@ -1,0 +1,3 @@
+							Average Relative Error
+				t_rel (%)							r_rel (deg/100m)
+Seq #	mean		low		high		std		mean		low		high		std
