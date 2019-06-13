@@ -22,40 +22,13 @@ if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
         BUILDCPLUSPLUS=true
         BUILDPYTHON=true
 
-        # Build the rest of Dockerfile
-        ######################################
-        # SECTION 2: CV packages             #
-        ######################################
-        
-        echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}" \
-                >> ~/.bashrc
-        source ~/.bashrc
-        ### -------------------------------------------------------------------
-        ### install OpenCV 3 with python3 bindings and CUDA 8
-        ### -------------------------------------------------------------------
-        apt update && apt -y upgrade
-        chmod +x /slamdoom/install/opencv3/install.sh && /slamdoom/install/opencv3/install.sh /slamdoom/libs python3
-        if [ $? -ne 0 ] ; then
-                echo -e "\nFailed to install OpenCV... Exiting...\n"
-                exit 1
-        fi
-        
-        #### -------------------------------------------------------------------
-        #### Install ORBSLAM2
-        #### -------------------------------------------------------------------
-        chmod +x /slamdoom/install/orbslam2/install.sh && /slamdoom/install/orbslam2/install.sh
-        if [ $? -ne 0 ] ; then
-                echo -e "\nFailed to install ORBSLAM2... Exiting...\n"
-                exit 1
-        fi
-
         ######################################
         #     Update shared library path     #
         ######################################
-        echo "/usr/lib/aarch64-linux-gnu/tegra" \
-                >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-        ldconfig
-        ln -sf /usr/lib/aarch64-linux-gnu/libdrm.so /usr/lib/aarch64-linux-gnu/libdrm.so.2
+        #echo "/usr/lib/aarch64-linux-gnu/tegra" \
+        #        >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+        #ldconfig
+        #ln -sf /usr/lib/aarch64-linux-gnu/libdrm.so /usr/lib/aarch64-linux-gnu/libdrm.so.2
         
 # If there are arguments, parse all arguments
 elif [ $# -ne 0 ] ; then
@@ -188,9 +161,11 @@ if [ "$BUILDPYTHON" = true ] ; then
         
         # If it's the first time build, add environment variable
         if [ -z $ORBSLAM2PYFIRSTBUILD ] ; then
-                echo "export CPATH=/usr/local/include/eigen/:"$SCRIPTPATH"/ORBSLAM2_C++11:/slamdoom/libs/cppzmq:/usr/local/include/" \
+                echo "export CPATH=/usr/local/include/eigen/:"$SCRIPTPATH"/ORBSLAM2_C++11:/usr/local/lib/cppzmq:/usr/local/include/" \
                         >> ~/.bashrc
-                echo "export LD_LIBRARY_PATH="$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/DBoW2/lib" \
+                echo "export LD_LIBRARY_PATH="$SCRIPTPATH"/lib:"$SCRIPTPATH"/ORBSLAM2_C++11/Thirdparty/DBoW2/lib:/usr/local/lib:/usr/local/opencv3/lib:$LD_LIBRARY_PATH" \
+                        >> ~/.bashrc
+                echo "export PYTHONPATH="$SCRIPTPATH"/lib:$PYTHONPATH" \
                         >> ~/.bashrc
                 source ~/.bashrc
         fi

@@ -1,18 +1,37 @@
+#!/usr/bin/env bash
+
+test_retval() {
+  if [ $? -ne 0 ] ; then
+    echo -e "\nFailed to ${*}... Exiting...\n"
+    exit 1
+  fi
+}
+
 # Install Pangolin and other ORBSLAM dependencies
-apt-get install -y libglew-dev
-cd /slamdoom/libs
+INSTALLPATH="$1"
+apt install -y libglew-dev
+test_retval "install libglew"
+cd $INSTALLPATH
 git clone https://github.com/stevenlovegrove/Pangolin pangolin
-cd /slamdoom/libs/pangolin
-mkdir build && cd build && cmake .. && make -j16 && make install
-cd /slamdoom/libs
-wget http://bitbucket.org/eigen/eigen/get/3.3.3.tar.bz2 \
-        && bzip2 -d 3.3.3.tar.bz2 && tar -xvf 3.3.3.tar \
-        && rm 3.3.3.tar && mv eigen-* eigen
-cd eigen && mkdir build && cd build \
-        && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=RELEASE .. \
-        && make install
-ln -s /slamdoom/libs/eigen /usr/local/include/eigen
+cd pangolin
+mkdir build
+cd build && cmake .. && make -j$(nproc) && make install
+test_retval "install pangolin"
+
+cd $INSTALLPATH
+if [ ! -d "eigen" ] ; then
+  wget http://bitbucket.org/eigen/eigen/get/3.3.3.tar.bz2 \
+    && bzip2 -d 3.3.3.tar.bz2 && tar -xvf 3.3.3.tar \
+    && rm 3.3.3.tar && mv eigen-* eigen
+fi
+cd eigen && mkdir build
+cd build \
+  && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=RELEASE .. \
+  && make install
+test_retval "install eigen"
+ln -s $INSTALLPATH/eigen /usr/local/include/eigen
 ldconfig
+
 #cd /slamdoom/tmp
 # Install ORBSLAM2
 #git clone https://github.com/raulmur/ORB_SLAM2.git orbslam2

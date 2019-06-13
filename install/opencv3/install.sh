@@ -1,24 +1,37 @@
 #!/usr/bin/env bash
 
+test_retval() {
+  if [ $? -ne 0 ] ; then
+    echo -e "\nFailed to ${*}... Exiting...\n"
+    exit 1
+  fi
+}
+
 add-apt-repository universe
 add-apt-repository multiverse
-apt-get update
-apt-get install -y git cmake
+add-apt-repository "deb http://ports.ubuntu.com/ubuntu-ports/ xenial-security main"
+apt update -y
+apt install -y git cmake
 
 if [ ! -d "$DIRECTORY" ]; then
     mkdir -p $1
-    apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev \
+    apt -y install libopencv-dev build-essential cmake git libgtk2.0-dev \
+      gfortran libjpeg8-dev libxine2-dev \
       pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev \
-      libhdf5-serial-dev libjpeg-dev libpng12-dev libjasper-dev libavcodec-dev \
-      libavformat-dev libswscale-dev \
+      libhdf5-serial-dev libjpeg-dev libpng-dev libtiff-dev libjasper1 libjasper-dev \
+      libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev \
       gstreamer1.0-tools gstreamer1.0-alsa gstreamer1.0-plugins-base \
       gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
       gstreamer1.0-plugins-ugly gstreamer1.0-libav libgstreamer1.0-dev \
       libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
-      libgstreamer-plugins-bad1.0-dev \
+      libgstreamer-plugins-bad1.0-dev qt5-default libatlas-base-dev \
+      libfaac-dev libavresample-dev python3-dev \
       libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev \
       libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 \
-      v4l-utils unzip ffmpeg
+      libx264-dev v4l-utils unzip ffmpeg libgtk-3-dev \
+      libprotobuf-dev protobuf-compiler libgoogle-glog-dev libgflags-dev \
+      libgphoto2-dev libeigen3-dev libhdf5-dev doxygen
+    test_retval "install dependencies"
     cd $1
     git clone https://github.com/opencv/opencv.git opencv3
     git clone https://github.com/opencv/opencv_contrib.git opencv3_contrib
@@ -72,7 +85,9 @@ if [ "$2" = "python3" ]; then
           -DPYTHON3_LIBRARY=/home/cs/.pyenv/versions/3.6.0/lib/libpython3.6m.a \
           -DPYTHON3_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
           ..
+    test_retval "opencv cmake config"
     make -j$(nproc) && make install
+    test_retval "building opencv"
 else
     cd $1/opencv3/build
     cmake -DCMAKE_BUILD_TYPE=RELEASE \
