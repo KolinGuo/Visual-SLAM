@@ -1,5 +1,6 @@
 # Visual-SLAM
-EEC 193AB Independent Senior Design Project 2018-2019 @ UC-Davis
+EEC 193AB Independent Senior Design Project 2018-2019 @ UC-Davis  
+[Final Project Report](Report/EEC_193AB_Final_Report.pdf)
 
 ## Group Members 
   * Kolin Guo
